@@ -303,9 +303,11 @@
           siteUri="https://cloud.google.com/monitoring/api/v3/">
       <enablement>
 	      <count value="1" />
-	      <iterate>
-	        <reference definitionId="com.google.cloud.tools.eclipse.appengine.onlyInStandardProjects" />
-	      </iterate>
+	      <not>
+		      <iterate>
+		        <reference definitionId="com.google.cloud.tools.eclipse.appengine.onlyInStandardProjects" />
+		      </iterate>
+	      </not>
       </enablement>
           
       <libraryDependency id="googlecloudcore" />

@@ -108,41 +108,31 @@ public class LibrarySelectorGroup implements ISelectionProvider {
       return true; 
     }
 
-    // todo we don't want the global selection here? This should be the project?
+    // fill in the default variable with the currently selected project
     List<IProject> defaultVariable = new ArrayList<>();
     // todo is this the best way to grab the selection? If so move to a utility package? 
     IWorkbench workbench = PlatformUI.getWorkbench();
     IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
     IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
     ISelection selection = activePage.getSelection();
-    if (selection != null) {
-      
+    if (selection instanceof IStructuredSelection) {
       IStructuredSelection ss = (IStructuredSelection) selection;
       Object element = ss.getFirstElement();
       if (element instanceof IResource) {
          IResource resource = (IResource) element;
          IProject project = resource.getProject();
-
-    /*  if (selection instanceof IAdaptable) {
-        IResource res = (IResource) ((IAdaptable) selection).getAdapter(IResource.class);
-      } */
-      defaultVariable.add(project);
+         defaultVariable.add(project);
       } else if (element instanceof IJavaProject) {
         IProject project = ((IJavaProject) element).getProject();
-
-   /*  if (selection instanceof IAdaptable) {
-       IResource res = (IResource) ((IAdaptable) selection).getAdapter(IResource.class);
-     } */
-     defaultVariable.add(project);
+        defaultVariable.add(project);
      }
-
     }
     IEvaluationContext context = new EvaluationContext(null, defaultVariable);
     try {
       EvaluationResult result = expression.evaluate(context);
       return result == EvaluationResult.TRUE;
     } catch (CoreException ex) {
-      ex.printStackTrace();
+      // default to including the library
       return true;
     }
   }
