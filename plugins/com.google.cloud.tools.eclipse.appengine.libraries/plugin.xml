@@ -294,6 +294,29 @@
               version="v1-rev100-1.22.0" />
       </libraryFile>
     </library>
+    
+    <library
+          id="stackdrivermonitoring"
+          group="clientapis"
+          name="%stackdrivermonitoring.name"
+          tooltip="%stackdrivermonitoring.tooltip"
+          siteUri="https://cloud.google.com/monitoring/api/v3/">
+      <enablement>
+	      <count value="1" />
+	      <iterate>
+	        <reference definitionId="com.google.cloud.tools.eclipse.appengine.onlyInStandardProjects" />
+	      </iterate>
+      </enablement>
+          
+      <libraryDependency id="googlecloudcore" />
+      <libraryFile
+            javadocUri="https://developers.google.com/resources/api-libraries/documentation/monitoring/v3/java/latest/">
+        <mavenCoordinates
+              artifactId="google-cloud-monitoring"
+              groupId="com.google.cloud"
+              version="0.17.2-alpha" />
+      </libraryFile>
+    </library>
   </extension>
 
   <extension point="org.eclipse.jdt.core.classpathContainerInitializer">

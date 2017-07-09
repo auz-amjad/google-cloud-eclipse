@@ -28,7 +28,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.eclipse.core.expressions.EvaluationContext;
+import org.eclipse.core.expressions.EvaluationResult;
+import org.eclipse.core.expressions.Expression;
+import org.eclipse.core.expressions.IEvaluationContext;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -42,6 +52,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * A checkbox group to choose libraries defined in plugin.xml.
@@ -74,16 +88,63 @@ public class LibrarySelectorGroup implements ISelectionProvider {
     apiGroup.setText(Messages.getString("appengine.libraries.group"));
 
     for (Library library : availableLibraries.values()) {
-      Button libraryButton = new Button(apiGroup, SWT.CHECK);
-      libraryButton.setText(getLibraryName(library));
-      if (library.getToolTip() != null) {
-        libraryButton.setToolTipText(library.getToolTip());
+      if (enabled(library)) {
+        Button libraryButton = new Button(apiGroup, SWT.CHECK);
+        libraryButton.setText(getLibraryName(library));
+        if (library.getToolTip() != null) {
+          libraryButton.setToolTipText(library.getToolTip());
+        }
+        libraryButton.setData(library);
+        libraryButton.addSelectionListener(new ManualSelectionTracker());
+        libraryButtons.put(library, libraryButton);
       }
-      libraryButton.setData(library);
-      libraryButton.addSelectionListener(new ManualSelectionTracker());
-      libraryButtons.put(library, libraryButton);
     }
     GridLayoutFactory.swtDefaults().generateLayout(apiGroup);
+  }
+
+  private static boolean enabled(Library library) {
+    Expression expression = library.getEnabled();
+    if (expression == null) {
+      return true; 
+    }
+
+    // todo we don't want the global selection here? This should be the project?
+    List<IProject> defaultVariable = new ArrayList<>();
+    // todo is this the best way to grab the selection? If so move to a utility package? 
+    IWorkbench workbench = PlatformUI.getWorkbench();
+    IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+    IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
+    ISelection selection = activePage.getSelection();
+    if (selection != null) {
+      
+      IStructuredSelection ss = (IStructuredSelection) selection;
+      Object element = ss.getFirstElement();
+      if (element instanceof IResource) {
+         IResource resource = (IResource) element;
+         IProject project = resource.getProject();
+
+    /*  if (selection instanceof IAdaptable) {
+        IResource res = (IResource) ((IAdaptable) selection).getAdapter(IResource.class);
+      } */
+      defaultVariable.add(project);
+      } else if (element instanceof IJavaProject) {
+        IProject project = ((IJavaProject) element).getProject();
+
+   /*  if (selection instanceof IAdaptable) {
+       IResource res = (IResource) ((IAdaptable) selection).getAdapter(IResource.class);
+     } */
+     defaultVariable.add(project);
+     }
+
+    }
+    IEvaluationContext context = new EvaluationContext(null, defaultVariable);
+    try {
+      EvaluationResult result = expression.evaluate(context);
+      return result == EvaluationResult.TRUE;
+    } catch (CoreException ex) {
+      ex.printStackTrace();
+      return true;
+    }
   }
 
   /**
