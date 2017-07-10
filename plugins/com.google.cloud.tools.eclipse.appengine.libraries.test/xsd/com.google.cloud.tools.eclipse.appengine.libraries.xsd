@@ -33,6 +33,8 @@ limitations under the License.
       </xs:documentation>
    </xs:annotation>
 
+  <xs:include schemaLocation="schema://org.eclipse.core.expressions/schema/expressionLanguage.exsd"/>  
+
    <xs:element name="plugin">
       <xs:complexType>
          <xs:choice minOccurs="1" maxOccurs="unbounded">
@@ -204,7 +206,7 @@ unspecified, the javadoc will be downloaded from the artifact location if availa
          </xs:attribute>
       </xs:complexType>
    </xs:element>
-
+<!--  
    <xs:element name="enablement">
       <xs:annotation>
          <xs:documentation>
@@ -247,7 +249,7 @@ unspecified, the javadoc will be downloaded from the artifact location if availa
           <xs:element ref="iterate"/>
         </xs:sequence>
      </xs:complexType>
-   </xs:element>
+   </xs:element> -->
 
 
    <xs:element name="libraryDependency">
