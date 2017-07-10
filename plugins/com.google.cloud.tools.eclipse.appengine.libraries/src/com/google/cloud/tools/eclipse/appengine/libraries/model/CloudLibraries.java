@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.RegistryFactory;
 
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 

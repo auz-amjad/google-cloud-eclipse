@@ -158,7 +158,11 @@ public final class Library {
     this.expression = expression;
   }
 
-  public Expression getEnabled() {
+  /**
+   * @return an expression to be evaluated to determine whether
+   *     this library is enabled in context
+   */
+  public Expression getEnablement() {
     return this.expression;
   }
 }

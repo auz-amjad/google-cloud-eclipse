@@ -86,8 +86,9 @@ public class LibrarySelectorGroup implements ISelectionProvider {
     Group apiGroup = new Group(parentContainer, SWT.NONE);
     apiGroup.setText(Messages.getString("appengine.libraries.group"));
 
+    IProject project = getSelectedProject();
     for (Library library : availableLibraries.values()) {
-      if (enabled(library)) {
+      if (enabled(library, project)) {
         Button libraryButton = new Button(apiGroup, SWT.CHECK);
         libraryButton.setText(getLibraryName(library));
         if (library.getToolTip() != null) {
@@ -101,30 +102,16 @@ public class LibrarySelectorGroup implements ISelectionProvider {
     GridLayoutFactory.swtDefaults().generateLayout(apiGroup);
   }
 
-  private static boolean enabled(Library library) {
-    Expression expression = library.getEnabled();
+  private static boolean enabled(Library library, IProject project) {
+    Expression expression = library.getEnablement();
     if (expression == null) {
       return true; 
     }
 
     // fill in the default variable with the currently selected project
     List<IProject> defaultVariable = new ArrayList<>();
-    // todo is this the best way to grab the selection? If so move to a utility package? 
-    IWorkbench workbench = PlatformUI.getWorkbench();
-    IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
-    IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
-    ISelection selection = activePage.getSelection();
-    if (selection instanceof IStructuredSelection) {
-      IStructuredSelection ss = (IStructuredSelection) selection;
-      Object element = ss.getFirstElement();
-      if (element instanceof IResource) {
-         IResource resource = (IResource) element;
-         IProject project = resource.getProject();
-         defaultVariable.add(project);
-      } else if (element instanceof IJavaProject) {
-        IProject project = ((IJavaProject) element).getProject();
-        defaultVariable.add(project);
-     }
+    if (project != null) {
+      defaultVariable.add(project);
     }
     IEvaluationContext context = new EvaluationContext(null, defaultVariable);
     try {
@@ -134,6 +121,25 @@ public class LibrarySelectorGroup implements ISelectionProvider {
       // default to including the library
       return true;
     }
+  }
+
+  private static IProject getSelectedProject() {
+    // todo is this the best way to grab the selection? If so move to a utility package? 
+    IWorkbench workbench = PlatformUI.getWorkbench();
+    IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+    IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
+    ISelection selection = activePage.getSelection();
+    if (selection instanceof IStructuredSelection) {
+      IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+      Object element = structuredSelection.getFirstElement();
+      if (element instanceof IResource) {
+         IResource resource = (IResource) element;
+         return resource.getProject();
+      } else if (element instanceof IJavaProject) {
+        return ((IJavaProject) element).getProject();
+     }
+    }
+    return null;
   }
 
   /**
