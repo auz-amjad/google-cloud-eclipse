@@ -67,13 +67,12 @@ public class BugReportCommandHandler extends AbstractHandler {
     return BUG_REPORT_URL + "?body=" + escaper.escape(body);
   }
 
-  private static Object getCloudSdkVersion() {
+  private static String getCloudSdkVersion() {
     try {
       CloudSdk sdk = new CloudSdk.Builder().build();
-      return sdk.getVersion();
+      return sdk.getVersion().toString();
     } catch (AppEngineException ex) {
-      // report the exception toString() as it can be meaningful
-      return ex;
+      return ex.toString();
     }
   }
 }
