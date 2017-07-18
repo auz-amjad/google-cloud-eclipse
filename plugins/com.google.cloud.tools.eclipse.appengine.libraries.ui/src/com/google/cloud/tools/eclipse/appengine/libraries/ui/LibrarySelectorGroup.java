@@ -109,9 +109,12 @@ public class LibrarySelectorGroup implements ISelectionProvider {
     }
 
     // fill in the default variable with the currently selected project
-    List<IProject> defaultVariable = new ArrayList<>();
+    // todo when creating a new project, the currently selected project may not be the right one
+    List<Object> defaultVariable = new ArrayList<>();
     if (project != null) {
       defaultVariable.add(project);
+    } else {
+      defaultVariable.add("foo");
     }
     IEvaluationContext context = new EvaluationContext(null, defaultVariable);
     try {
@@ -125,6 +128,8 @@ public class LibrarySelectorGroup implements ISelectionProvider {
 
   private static IProject getSelectedProject() {
     // todo is this the best way to grab the selection? If so move to a utility package? 
+    // maybe we should pass the project into the constructor, so it can be null even
+    // if we are using the wizard but a different project is selected
     IWorkbench workbench = PlatformUI.getWorkbench();
     IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
     IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
