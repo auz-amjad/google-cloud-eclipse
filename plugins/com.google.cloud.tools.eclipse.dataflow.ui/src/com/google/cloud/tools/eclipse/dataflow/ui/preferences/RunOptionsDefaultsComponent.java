@@ -31,9 +31,12 @@ import com.google.cloud.tools.eclipse.dataflow.ui.page.MessageTarget;
 import com.google.cloud.tools.eclipse.dataflow.ui.util.ButtonFactory;
 import com.google.cloud.tools.eclipse.dataflow.ui.util.DisplayExecutor;
 import com.google.cloud.tools.eclipse.dataflow.ui.util.SelectFirstMatchingPrefixListener;
-import com.google.cloud.tools.eclipse.dataflow.ui.util.SelectFirstMatchingPrefixListener.OnCompleteListener;
 import com.google.cloud.tools.eclipse.ui.util.databinding.BucketNameValidator;
 import com.google.common.base.Strings;
+import java.util.Locale;
+import java.util.SortedSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.wizard.WizardPage;
@@ -53,10 +56,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.statushandlers.StatusManager;
-import java.util.Locale;
-import java.util.SortedSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * Collects default run options for Dataflow Pipelines and provides means to create and modify them.
@@ -101,22 +100,16 @@ public class RunOptionsDefaultsComponent {
     createButton = ButtonFactory.newPushButton(target, "&Create");
     createButton.setEnabled(false);
 
+    projectInputLabel.setText("Cloud Platform &Project ID:");
+
     // Initialize the Default Project, which is used to populate the Staging Location field
     String project = preferences.getDefaultProject();
-    if (project == null) {
-      project = "";
-    }
-
-    projectInputLabel.setText("Cloud Platform &Project ID:");
-    projectInput.setText(project);
+    projectInput.setText(Strings.nullToEmpty(project));
 
     comboLabel.setText("Cloud Storage Staging &Location:");
 
     String stagingLocation = preferences.getDefaultStagingLocation();
-    if (stagingLocation == null) {
-      stagingLocation = "";
-    }
-    stagingLocationInput.setText(stagingLocation);
+    stagingLocationInput.setText(Strings.nullToEmpty(stagingLocation));
 
     // Project input occupies a single row
     projectInputLabel.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false, 1, 1));
@@ -134,16 +127,16 @@ public class RunOptionsDefaultsComponent {
 
     completionListener = new SelectFirstMatchingPrefixListener(stagingLocationInput);
     stagingLocationInput.addModifyListener(completionListener);
-    completionListener.addOnCompleteListener(new OnCompleteListener() {
+    stagingLocationInput.addModifyListener(new ModifyListener() {
       @Override
-      public void onComplete(String contents) {
-        verifyStagingLocation(contents);
+      public void modifyText(ModifyEvent event) {
+        verifyStagingLocation(stagingLocationInput.getText());
       }
     });
     createButton.addSelectionListener(new CreateStagingLocationListener());
 
     stagingLocationInput.addModifyListener(new EnableCreateButton());
-    
+
     updateStagingLocations(project);
     messageTarget.setInfo("Set Pipeline Run Option Defaults");
   }
@@ -182,17 +175,9 @@ public class RunOptionsDefaultsComponent {
     return GcsDataflowProjectClient.toGcsLocationUri(stagingLocationInput.getText());
   }
 
-  public void addProjectModifyListener(ModifyListener listener) {
-    projectInput.addModifyListener(listener);
-  }
-
-  public void addStagingLocationModifyListener(ModifyListener listener) {
-    stagingLocationInput.addModifyListener(listener);
-  }
-
   public void addModifyListener(ModifyListener listener) {
-    addProjectModifyListener(listener);
-    addStagingLocationModifyListener(listener);
+    projectInput.addModifyListener(listener);
+    stagingLocationInput.addModifyListener(listener);
   }
 
   public void setEnabled(boolean enabled) {
@@ -219,25 +204,31 @@ public class RunOptionsDefaultsComponent {
    * Ensure the staging location specified in the input combo is valid.
    */
   private void verifyStagingLocation(final String stagingLocation) {
+    setPageComplete(false);
+    messageTarget.clear();
+
     if (verifyJob != null) {
       // Cancel any existing verifyJob
+      // FIXME: this has no effect, as "VerifyStagingLocationJob" doesn't honor cancellation.
       verifyJob.cancel();
     }
-    if (client == null) {
-      // We can't verify the staging locations because we don't have a GCS client
-      return;
-    }
-    if (stagingLocation.isEmpty()) {
+    if (trimBucketName().isEmpty()) {
       // If the staging location is empty, we don't have anything to verify; and we don't have any
       // interesting messaging.
-      messageTarget.clear();
       setPageComplete(true);
       return;
-    } else if (!bucketNameOk()) {
-      setPageComplete(false);
+    }
+
+    IStatus status = bucketNameStatus();
+    if (!status.isOK()) {
+      messageTarget.setError(status.getMessage());
       return;
     }
-    
+
+    if (client == null) {
+      // We can't verify the staging location because we don't have a GCS client
+      return;
+    }
     verifyJob = VerifyStagingLocationJob.create(client, stagingLocation);
     verifyJob.schedule(VERIFY_LOCATION_DELAY_MS);
     final ListenableFutureProxy<VerifyStagingLocationResult> resultFuture =
@@ -278,7 +269,7 @@ public class RunOptionsDefaultsComponent {
       updateStagingLocations(getProject());
     }
   }
-  
+
   /**
    * Create a GCS bucket in the project specified in the project input at the location specified in
    * the staging location input.
@@ -302,7 +293,7 @@ public class RunOptionsDefaultsComponent {
       }
     }
   }
-  
+
   private void setPageComplete(boolean complete) {
     if (page != null) {
       page.setPageComplete(complete);
@@ -346,28 +337,26 @@ public class RunOptionsDefaultsComponent {
       }
     }
   }
-  
+
   private static final BucketNameValidator bucketNameValidator = new BucketNameValidator();
-  
-  private boolean bucketNameOk() {
+
+  private String trimBucketName() {
     String bucketName = stagingLocationInput.getText().trim();
     if (bucketName.toLowerCase(Locale.US).startsWith("gs://")) {
       bucketName = bucketName.substring(5);
     }
-    IStatus status = bucketNameValidator.validate(bucketName);
-    if (!status.isOK()) {
-      messageTarget.setError(status.getMessage());
-      setPageComplete(false);
-    }
-    boolean enabled = status.isOK() && !bucketName.isEmpty();
-    return enabled;
+    return bucketName;
   }
-  
+
+  private IStatus bucketNameStatus() {
+    return bucketNameValidator.validate(trimBucketName());
+  }
+
   private class EnableCreateButton implements ModifyListener {
 
     @Override
     public void modifyText(ModifyEvent event) {
-      boolean enabled = bucketNameOk();
+      boolean enabled = !trimBucketName().isEmpty() && bucketNameStatus().isOK();
       createButton.setEnabled(enabled);
     }
 
