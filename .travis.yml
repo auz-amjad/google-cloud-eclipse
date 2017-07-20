@@ -7,7 +7,7 @@ install:
   # use mvn ≥ 3.3.9 to ensure faulty test exit states fail the build (#1276)
   - mvn -B -N io.takari:maven:wrapper -Dmaven=3.5.0
   # download and install Cloud SDK (may be cached)
-  - build/install-cloudsdk.sh 161.0.0 $HOME
+  - build/install-cloudsdk.sh 162.0.1 "$HOME/Cloud SDK"
 # Tycho ≥ 0.26 requires Java 8
 jdk: oraclejdk8
 env:
@@ -18,7 +18,7 @@ env:
     - JAVA_RUNTIME=JavaSE-1.8 ECLIPSE_TARGET=neon
     - JAVA_RUNTIME=JavaSE-1.8 ECLIPSE_TARGET=oxygen MAVEN_FLAGS=-Pjacoco
   global:
-    - PATH=$PWD/google-cloud-sdk/bin:$PATH
+    - PATH="$HOME/Cloud SDK/google-cloud-sdk/bin:$PATH"
     # Our maven build typically reports about 512m
     - MAVEN_OPTS=-Xmx700m
     - CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=true
@@ -39,7 +39,7 @@ addons:
 cache:
   directories:
    - $HOME/.m2
-   - $HOME/google-cloud-sdk
+   - $HOME/Cloud\ SDK/google-cloud-sdk
 after_success:
   # test req'd as we don't run coverage on all elements of the matrix
   - if [ -d build/jacoco/target ]; then bash <(curl -s https://codecov.io/bash); fi
