@@ -39,6 +39,7 @@ die() {
 }
 
 rm -rf "${CLOUDSDKDIR}"
+mkdir -p "${INSTALLDIR}" || die
 
 echo ">> download google-cloud-sdk-${CLOUDSDK_VERSION}"
 wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUDSDK_VERSION}-linux-x86_64.tar.gz || die
