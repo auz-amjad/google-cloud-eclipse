@@ -109,6 +109,11 @@ public class LocalAppEnginePublishOperationTest {
     File webInf = new File(publishedModule, "WEB-INF");
     assertTrue(webInf.isDirectory());
 
+    // https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1798
+    if (!new File(webInf, "classes/sox/server/GreetingServiceImpl.class").exists()) {
+      ThreadDumpingWatchdog.report();
+    }
+
     assertTrue(new File(webInf, "appengine-web.xml").isFile());
     assertTrue(new File(webInf, "web.xml").isFile());
     assertTrue(new File(webInf, "classes/sox/server/GreetingServiceImpl.class").isFile());
