@@ -111,7 +111,7 @@ public class LocalAppEnginePublishOperationTest {
 
     // https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1798
     if (!new File(webInf, "classes/sox/server/GreetingServiceImpl.class").exists()) {
-      ThreadDumpingWatchdog.report();
+      new ThreadDumpingWatchdog(0, TimeUnit.DAYS).run();
     }
 
     assertTrue(new File(webInf, "appengine-web.xml").isFile());
