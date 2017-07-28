@@ -87,31 +87,31 @@ public class AnalyticsPingManagerTest {
   }
 
   @Test
-  public void testOptInDialogShown_optInNotRegisteredAndNotYetOptedIn() {
+  public void testShouldShowOptInDialog_optInNotRegisteredAndNotYetOptedIn() {
     mockOptIn(false);
     mockOptInRegistered(false);
-    verifyOptInDialogOpen(times(1));
+    assertTrue(pingManager.shouldShowOptInDialog());
   }
 
   @Test
-  public void testOptInDialogSkipped_optInNotRegisteredAndAlreadyOptedIn() {
+  public void testShouldShowOptInDialog_optInNotRegisteredAndAlreadyOptedIn() {
     mockOptIn(true);
     mockOptInRegistered(false);
-    verifyOptInDialogOpen(never());
+    assertFalse(pingManager.shouldShowOptInDialog());
   }
 
   @Test
-  public void testOptInDialogSkipped_optInRegisteredAndNotYetOptedIn() {
+  public void testShouldShowOptInDialog_optInRegisteredAndNotYetOptedIn() {
     mockOptIn(false);
     mockOptInRegistered(true);
-    verifyOptInDialogOpen(never());
+    assertFalse(pingManager.shouldShowOptInDialog());
   }
 
   @Test
-  public void testOptInDialogSkipped_optInRegisteredAndAlreadyOptedIn() {
+  public void testShouldShowOptInDialog_optInRegisteredAndAlreadyOptedIn() {
     mockOptIn(true);
     mockOptInRegistered(true);
-    verifyOptInDialogOpen(never());
+    assertFalse(pingManager.shouldShowOptInDialog());
   }
 
   private void mockOptIn(boolean optIn) {
@@ -123,11 +123,6 @@ public class AnalyticsPingManagerTest {
     when(preferences.getBoolean(eq(AnalyticsPreferences.ANALYTICS_OPT_IN_REGISTERED),
                                 anyBoolean()))
         .thenReturn(registered);
-  }
-
-  private void verifyOptInDialogOpen(VerificationMode verificationMode) {
-    pingManager.showOptInDialogIfNeeded(null);
-    verify(display, verificationMode).syncExec(any(Runnable.class));
   }
 
   @Test

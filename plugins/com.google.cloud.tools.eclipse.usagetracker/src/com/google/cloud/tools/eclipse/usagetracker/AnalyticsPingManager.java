@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -84,10 +83,15 @@ public class AnalyticsPingManager {
   final Job eventFlushJob = new Job("Analytics Event Submission") {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-      while (!pingEventQueue.isEmpty()) {
-        PingEvent event = pingEventQueue.poll();
-        showOptInDialogIfNeeded(event.shell);
-        sendPingHelper(event);
+      try {
+        while (!pingEventQueue.isEmpty() && !monitor.isCanceled()) {
+          PingEvent event = pingEventQueue.poll();
+          if (shouldShowOptInDialog()) {
+            openOptInDialog(event.shell);
+          }
+          sendPingHelper(event);
+        }
+      } catch (InterruptedException ex) {  // Fall-through to die.
       }
       return Status.OK_STATUS;
     }
@@ -158,7 +162,7 @@ public class AnalyticsPingManager {
    * require implementing a custom UI editor field class for the preference page, so here we
    * take a simple approach to use two Boolean settings.
    */
-  void registerOptInStatus(boolean optedIn) {
+  private void registerOptInStatus(boolean optedIn) {
     preferences.putBoolean(AnalyticsPreferences.ANALYTICS_OPT_IN, optedIn);
     preferences.putBoolean(AnalyticsPreferences.ANALYTICS_OPT_IN_REGISTERED, true);
     flushPreferences(preferences);
@@ -236,30 +240,31 @@ public class AnalyticsPingManager {
     return parametersMap;
   }
 
-  // To prevent showing multiple opt-in dialogs. Assumes that once a dialog is opened,
-  // implicit closure is considered opting out.
-  private AtomicBoolean optInDialogOpened = new AtomicBoolean(false);
+  @VisibleForTesting
+  boolean shouldShowOptInDialog() {
+    return !userHasOptedIn() && !userHasRegisteredOptInStatus();
+  }
 
   /**
    * @param parentShell if null, tries to show the dialog at the workbench level.
    */
-  public void showOptInDialogIfNeeded(final Shell parentShell) {
-    if (!userHasOptedIn() && !userHasRegisteredOptInStatus()) {
-      if (optInDialogOpened.compareAndSet(false, true)) {
-        display.syncExec(new Runnable() {
-          @Override
-          public void run() {
-            new OptInDialog(findShell(parentShell)).open();
-          }
-        });
+  private void openOptInDialog(final Shell parentShell) throws InterruptedException {
+    final OptInDialog[] dialogHolder = new OptInDialog[1];
+    display.syncExec(new Runnable() {
+      @Override
+      public void run() {
+        dialogHolder[0] = new OptInDialog(findShell(parentShell));
+        dialogHolder[0].open();
       }
-    }
+    });
+    registerOptInStatus(dialogHolder[0].isOptInYes());
   }
 
   /**
    * May return null. (However, dialogs can have null as a parent shell.)
    */
   private Shell findShell(Shell parentShell) {
+    Preconditions.checkNotNull(display);
     if (parentShell != null && !parentShell.isDisposed()) {
       return parentShell;
     }
@@ -272,9 +277,7 @@ public class AnalyticsPingManager {
     } catch (IllegalStateException ise) {  // getWorkbench() might throw this.
       // Fall through.
     }
-
-    Display display = Display.getCurrent();
-    return display != null ? display.getActiveShell() : null;
+    return display.getActiveShell();
   }
 
   private static void flushPreferences(IEclipsePreferences preferences) {
