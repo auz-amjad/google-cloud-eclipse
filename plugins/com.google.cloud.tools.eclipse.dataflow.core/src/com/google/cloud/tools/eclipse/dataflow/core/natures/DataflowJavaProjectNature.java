@@ -16,10 +16,10 @@
 
 package com.google.cloud.tools.eclipse.dataflow.core.natures;
 
-import com.google.api.client.util.Preconditions;
 import com.google.cloud.tools.eclipse.dataflow.core.DataflowCorePlugin;
 import com.google.cloud.tools.eclipse.util.NatureUtils;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;

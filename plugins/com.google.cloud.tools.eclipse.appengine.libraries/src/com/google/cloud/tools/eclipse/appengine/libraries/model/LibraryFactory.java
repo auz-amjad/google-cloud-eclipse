@@ -59,7 +59,7 @@ class LibraryFactory {
   private static final String ATTRIBUTE_NAME_CLASSIFIER = "classifier"; //$NON-NLS-1$
   private static final String ATTRIBUTE_NAME_EXPORT = "export"; //$NON-NLS-1$
   private static final String ATTRIBUTE_NAME_RECOMMENDATION = "recommendation"; //$NON-NLS-1$
-
+  
   Library create(IConfigurationElement configurationElement) throws LibraryFactoryException {
     try {
       if (ELEMENT_NAME_LIBRARY.equals(configurationElement.getName())) {
@@ -122,6 +122,7 @@ class LibraryFactory {
             libraryFileElement.getChildren(ELEMENT_NAME_MAVEN_COORDINATES));
         LibraryFile libraryFile = new LibraryFile(mavenCoordinates);
         libraryFile.setFilters(getFilters(libraryFileElement.getChildren()));
+        // todo do we really want these next two to be required?
         libraryFile.setSourceUri(
             getUri(libraryFileElement.getAttribute(ATTRIBUTE_NAME_SOURCE_URI)));
         libraryFile.setJavadocUri(
@@ -158,6 +159,7 @@ class LibraryFactory {
     if (!Strings.isNullOrEmpty(repository)) {
       mavenCoordinates.setRepository(repository);
     }
+    
     String version = mavenCoordinatesElement.getAttribute(ATTRIBUTE_NAME_VERSION);
     if (!Strings.isNullOrEmpty(version)) {
       mavenCoordinates.setVersion(version);
