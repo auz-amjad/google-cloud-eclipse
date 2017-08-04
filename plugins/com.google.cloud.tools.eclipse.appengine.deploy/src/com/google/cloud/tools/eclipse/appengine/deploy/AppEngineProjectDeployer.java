@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.deploy;
 
+import com.google.cloud.tools.appengine.api.AppEngineException;
 import com.google.cloud.tools.appengine.api.deploy.DefaultDeployConfiguration;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkAppEngineDeployment;
@@ -73,7 +74,12 @@ public class AppEngineProjectDeployer {
           DeployPreferencesConverter.toDeployConfiguration(deployPreferences);
       configuration.setDeployables(deployables);
       CloudSdkAppEngineDeployment deployment = new CloudSdkAppEngineDeployment(cloudSdk);
-      deployment.deploy(configuration);
+      try { 
+        deployment.deploy(configuration);
+      } catch (AppEngineException ex) {
+        // TBD what should we do here? Is the exit status set to an error?
+        // how do we surface the failure to the end user?
+      }
       return cloudSdkProcessWrapper.getExitStatus();
     } finally {
       progress.worked(1);
