@@ -79,6 +79,7 @@ public class AppEngineProjectDeployer {
       } catch (AppEngineException ex) {
         // TBD what should we do here? Is the exit status set to an error?
         // how do we surface the failure to the end user?
+        ex.printStackTrace();
       }
       return cloudSdkProcessWrapper.getExitStatus();
     } finally {
