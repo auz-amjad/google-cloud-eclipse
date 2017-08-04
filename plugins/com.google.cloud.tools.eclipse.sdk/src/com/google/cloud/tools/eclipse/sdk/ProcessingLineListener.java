@@ -17,38 +17,34 @@
 package com.google.cloud.tools.eclipse.sdk;
 
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessOutputLineListener;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link ProcessOutputLineListener} that collects output lines satisfying some {@link Predicate}.
+ * A {@link ProcessOutputLineListener} that processes output lines using a given line-processing
+ * function. Drops lines for which the function returns {@code null}.
  */
-public class CollectingLineListener implements ProcessOutputLineListener {
+public class ProcessingLineListener implements ProcessOutputLineListener {
 
-  private final Predicate<String> condition;
-  private final List<String> collectedMessages = new ArrayList<>();
+  private final Function<String, String> lineProcessor;
+  private final List<String> processedLines = new ArrayList<>();
 
-  /**
-   * @param predicate all lines satisfying this predicate will be collected
-   */
-  public CollectingLineListener(Predicate<String> predicate) {
-    Preconditions.checkNotNull(predicate, "predicate is null");
-    this.condition = predicate;
+  public ProcessingLineListener(Function<String, String> lineProcessor) {
+    Preconditions.checkNotNull(lineProcessor, "line process is null");
+    this.lineProcessor = lineProcessor;
   }
 
-  /**
-   * Evaluates the predicate on <code>line</code> and collects it if it's <code>true</code>.
-   */
   @Override
   public void onOutputLine(String line) {
-    if (condition.apply(line)) {
-      collectedMessages.add(line);
+    String processed = lineProcessor.apply(line);
+    if (processed != null) {
+      processedLines.add(processed);
     }
   }
 
-  public List<String> getCollectedMessages() {
-    return new ArrayList<>(collectedMessages);
+  public List<String> getProcessedLines() {
+    return new ArrayList<>(processedLines);
   }
 }

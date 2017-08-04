@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.tools.eclipse.appengine.deploy.util.CloudSdkProcessWrapper.ProcessExitRecorder;
-import com.google.cloud.tools.eclipse.sdk.CollectingLineListener;
+import com.google.cloud.tools.eclipse.sdk.ProcessingLineListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -124,8 +124,8 @@ public class CloudSdkProcessWrapperTest {
   @Test
   public void testProcessExitRecorder_onErrorExit() {
     wrapper.setUpStandardStagingCloudSdk(null, null, null);
-    CollectingLineListener errorMessageCollector = mock(CollectingLineListener.class);
-    when(errorMessageCollector.getCollectedMessages()).thenReturn(Arrays.asList("got ", " errors"));
+    ProcessingLineListener errorMessageCollector = mock(ProcessingLineListener.class);
+    when(errorMessageCollector.getProcessedLines()).thenReturn(Arrays.asList("got", "errors"));
 
     ProcessExitRecorder recorder = wrapper.new ProcessExitRecorder(errorMessageCollector);
     recorder.onExit(23);

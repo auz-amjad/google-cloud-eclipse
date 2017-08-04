@@ -23,14 +23,14 @@ import com.google.cloud.tools.appengine.cloudsdk.process.ProcessStartListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.StringBuilderProcessOutputLineListener;
 import com.google.cloud.tools.eclipse.appengine.deploy.Messages;
 import com.google.cloud.tools.eclipse.appengine.deploy.standard.StandardStagingDelegate;
-import com.google.cloud.tools.eclipse.sdk.CollectingLineListener;
+import com.google.cloud.tools.eclipse.sdk.GcloudStructuredErrorLogMessageExtractor;
 import com.google.cloud.tools.eclipse.sdk.MessageConsoleWriterOutputLineListener;
+import com.google.cloud.tools.eclipse.sdk.ProcessingLineListener;
 import com.google.cloud.tools.eclipse.util.CloudToolsInfo;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -45,14 +45,6 @@ import org.eclipse.ui.console.MessageConsoleStream;
  * {@link AppEngineDeployer} for their convenience.
  */
 public class CloudSdkProcessWrapper {
-
-  private static final String ERROR_MESSAGE_PREFIX = "ERROR:";
-  private static final Predicate<String> IS_ERROR_LINE = new Predicate<String>() {
-    @Override
-    public boolean apply(String line) {
-      return line != null && line.startsWith(ERROR_MESSAGE_PREFIX);
-    }
-  };
 
   private CloudSdk cloudSdk;
 
@@ -69,14 +61,19 @@ public class CloudSdkProcessWrapper {
     Preconditions.checkArgument(Files.exists(credentialFile), "non-existing credential file");
     Preconditions.checkState(cloudSdk == null, "CloudSdk already set up");
 
+    ProcessingLineListener errorMessageExtractor = new ProcessingLineListener(
+        new GcloudStructuredErrorLogMessageExtractor());
+
     // Structured deploy result (in JSON format) goes to stdout, so prepare to capture that.
     stdOutCaptor = new StringBuilderProcessOutputLineListener();
 
     // Normal operation output goes to stderr.
     MessageConsoleStream stdErrOutputStream = normalOutputStream;
-    CloudSdk.Builder cloudSdkBuilder = getBaseCloudSdkBuilder(stdErrOutputStream);
-    cloudSdkBuilder.appCommandCredentialFile(credentialFile.toFile());
-    cloudSdkBuilder.addStdOutLineListener(stdOutCaptor);
+    CloudSdk.Builder cloudSdkBuilder =
+        getBaseCloudSdkBuilder(stdErrOutputStream, errorMessageExtractor)
+        .appCommandCredentialFile(credentialFile.toFile())
+        .appCommandShowStructuredLogs("always")
+        .addStdOutLineListener(stdOutCaptor);
     cloudSdk = cloudSdkBuilder.build();
   }
 
@@ -90,21 +87,19 @@ public class CloudSdkProcessWrapper {
       MessageConsoleStream stdoutOutputStream, MessageConsoleStream stderrOutputStream) {
     Preconditions.checkState(cloudSdk == null, "CloudSdk already set up");
 
-    CloudSdk.Builder cloudSdkBuilder = getBaseCloudSdkBuilder(stderrOutputStream);
+    CloudSdk.Builder cloudSdkBuilder =
+        getBaseCloudSdkBuilder(stderrOutputStream, null /* errorMessageCollector */)
+        .addStdOutLineListener(new MessageConsoleWriterOutputLineListener(stdoutOutputStream));
     if (javaHome != null) {
       cloudSdkBuilder.javaHome(javaHome);
     }
-    cloudSdkBuilder.addStdOutLineListener(
-        new MessageConsoleWriterOutputLineListener(stdoutOutputStream));
     cloudSdk = cloudSdkBuilder.build();
   }
 
-  private CloudSdk.Builder getBaseCloudSdkBuilder(MessageConsoleStream stdErrListener) {
-    CollectingLineListener errorMessageCollector = new CollectingLineListener(IS_ERROR_LINE);
-
+  private CloudSdk.Builder getBaseCloudSdkBuilder(MessageConsoleStream stdErrStream,
+      ProcessingLineListener errorMessageCollector) {
     return new CloudSdk.Builder()
-        .addStdErrLineListener(new MessageConsoleWriterOutputLineListener(stdErrListener))
-        .addStdErrLineListener(errorMessageCollector)
+        .addStdErrLineListener(new MessageConsoleWriterOutputLineListener(stdErrStream))
         .startListener(new StoreProcessObjectListener())
         .exitListener(new ProcessExitRecorder(errorMessageCollector))
         .appCommandMetricsEnvironment(CloudToolsInfo.METRICS_NAME)
@@ -150,10 +145,10 @@ public class CloudSdkProcessWrapper {
   @VisibleForTesting
   class ProcessExitRecorder implements ProcessExitListener {
 
-    private final CollectingLineListener errorMessageCollector;
+    private final ProcessingLineListener errorMessageCollector;
 
     @VisibleForTesting
-    ProcessExitRecorder(CollectingLineListener errorMessageCollector) {
+    ProcessExitRecorder(ProcessingLineListener errorMessageCollector) {
       this.errorMessageCollector = errorMessageCollector;
     }
 
@@ -168,7 +163,7 @@ public class CloudSdkProcessWrapper {
 
     private String getErrorMessage(int exitCode) {
       if (errorMessageCollector != null) {
-        List<String> lines = errorMessageCollector.getCollectedMessages();
+        List<String> lines = errorMessageCollector.getProcessedLines();
         if (!lines.isEmpty()) {
           return Joiner.on('\n').join(lines);
         }
