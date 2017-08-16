@@ -31,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -39,6 +38,8 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -94,9 +95,15 @@ public final class TestProjectCreator extends ExternalResource {
           // Wait for the WTP validation job as it runs without the workspace protection lock
           ProjectUtils.waitForProjects(project);
         }
-        project.delete(true, null);
+        ISchedulingRule rule = project.getWorkspace().getRuleFactory().deleteRule(project);
+        Job.getJobManager().beginRule(rule, null);
+        try {
+          project.delete(true, null);
+        } finally {
+          Job.getJobManager().endRule(rule);
+        }
       } catch (IllegalArgumentException ex) {
-        new ThreadDumpingWatchdog(0, TimeUnit.DAYS).run();
+        ThreadDumpingWatchdog.report("Error deleting test project", null);
         throw ex;
       } catch (CoreException ex) {
         throw new AssertionError("Could not delete project", ex);
@@ -138,8 +145,7 @@ public final class TestProjectCreator extends ExternalResource {
   private void createProject(String projectName) throws CoreException {
     IProjectDescription newProjectDescription =
         ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
-    newProjectDescription.setNatureIds(
-        new String[] {FacetedProjectNature.NATURE_ID});
+    newProjectDescription.setNatureIds(new String[] {FacetedProjectNature.NATURE_ID});
     project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
     project.create(newProjectDescription, null);
     project.open(null);
