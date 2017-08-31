@@ -20,7 +20,8 @@ import com.google.common.base.Preconditions;
 import java.text.MessageFormat;
 
 /**
- * Describes a Maven artifact.
+ * Describes a Maven artifact. MavenCoordinates objects are considered to be equal
+ * if and only if the group ID and artifact IDs are the same.
  */
 public final class MavenCoordinates {
 
