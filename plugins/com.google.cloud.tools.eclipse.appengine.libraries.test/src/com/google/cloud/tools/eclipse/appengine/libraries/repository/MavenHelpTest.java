@@ -17,7 +17,6 @@
 package com.google.cloud.tools.eclipse.appengine.libraries.repository;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 import com.google.cloud.tools.eclipse.appengine.libraries.model.MavenCoordinates;
 import org.eclipse.core.runtime.IPath;
@@ -36,9 +35,6 @@ public class MavenHelpTest {
         .setVersion("1.0.0")
         .build();
     
-    when(artifact.getGroupId()).thenReturn("groupId");
-    when(artifact.getArtifactId()).thenReturn("artifactId");
-    when(artifact.getVersion()).thenReturn("1.0.0");
     IPath folder = MavenHelper.bundleStateBasedMavenFolder(artifact);
     assertTrue(folder.toString().endsWith(EXPECTED_DOWNLOAD_FOLDER));
   }
@@ -52,7 +48,6 @@ public class MavenHelpTest {
         .setVersion("LATEST")
         .build();
         
-        when(artifact.getVersion()).thenReturn("LATEST");
     MavenHelper.bundleStateBasedMavenFolder(artifact);
   }
 }
