@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 /**
  * Describes a Maven artifact.
  */
-public class MavenCoordinates {
+public final class MavenCoordinates {
 
   public static final String LATEST_VERSION = "LATEST";
   public static final String JAR_TYPE = "jar";
@@ -91,6 +91,26 @@ public class MavenCoordinates {
    */
   public String getArtifactId() {
     return artifactId;
+  }
+  
+  @Override 
+  public int hashCode() {
+    return (groupId + ":" + artifactId).hashCode();
+  }
+  
+  /**
+   * Two Maven coordinates are equal if and only if they have the same
+   * group ID and artifact ID. Type, classifier, version, and repo
+   * are deliberately not considered. 
+   */
+  @Override 
+  public boolean equals(Object o) {
+    if (o == null || !(o instanceof MavenCoordinates)) {
+      return false;
+    }
+    MavenCoordinates other = (MavenCoordinates) o;
+    return other.artifactId.equals(artifactId) 
+        && other.groupId.equals(groupId);
   }
 
   @Override
