@@ -58,7 +58,7 @@
               version="5.1.21" />
       </libraryFile>
       <libraryFile
-          export="true" 
+          export="false" 
           javadocUri="https://google.github.io/guava/releases/20.0/api/docs/">
         <mavenCoordinates
               artifactId="guava"
