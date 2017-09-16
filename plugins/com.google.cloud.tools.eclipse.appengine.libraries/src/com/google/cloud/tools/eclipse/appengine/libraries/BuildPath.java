@@ -129,8 +129,7 @@ public class BuildPath {
     return prepareLibraries(javaProject, libraries, monitor, false);
   }
 
-  @VisibleForTesting
-  static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
+  private static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
     IClasspathAttribute[] classpathAttributes = new IClasspathAttribute[1];
     if (library.isExport()) {
       boolean isWebApp = true;
