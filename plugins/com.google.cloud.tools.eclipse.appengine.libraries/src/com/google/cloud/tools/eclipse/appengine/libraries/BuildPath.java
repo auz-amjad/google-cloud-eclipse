@@ -20,7 +20,6 @@ import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.util.ClasspathUtil;
 import com.google.cloud.tools.eclipse.util.MavenUtils;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
