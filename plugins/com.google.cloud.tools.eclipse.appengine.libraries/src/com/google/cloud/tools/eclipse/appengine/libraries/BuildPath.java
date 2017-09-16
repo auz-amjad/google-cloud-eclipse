@@ -83,7 +83,7 @@ public class BuildPath {
    * @return the entries added to the classpath.
    *     Does not include entries previously present in classpath.
    */
-  public static IClasspathEntry[] addLibraries(
+  static IClasspathEntry[] addLibraries(
       IJavaProject javaProject, List<Library> libraries, IProgressMonitor monitor)
           throws JavaModelException, CoreException {
 
