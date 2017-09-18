@@ -27,8 +27,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -58,8 +60,30 @@ public class BuildPath {
       addMavenLibraries(project, libraries, monitor);
     } else {
       IJavaProject javaProject = JavaCore.create(project);
+      addGoogleLibariesContainer(javaProject, monitor);
       addLibraries(javaProject, libraries, monitor);
     }
+  }
+
+  private static void addGoogleLibariesContainer(IJavaProject javaProject,
+      IProgressMonitor monitor) throws CoreException {
+    
+    SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
+    
+    IClasspathAttribute[] classpathAttributes = {UpdateClasspathAttributeUtil.createDependencyAttribute(true)};
+    IPath containerPath = new Path(Library.CONTAINER_PATH_PREFIX + "/Google APIs");
+    IClasspathEntry libraryContainer = JavaCore.newContainerEntry(containerPath,
+        new IAccessRule[0], classpathAttributes, false);
+    
+    List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
+    subMonitor.worked(1);
+    // todo could we short circuit this earlier when container already exists?
+    if (!rawClasspath.contains(libraryContainer)) {
+      List<IClasspathEntry> newEntries = new ArrayList<>();
+      newEntries.add(libraryContainer);
+      ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
+    }
+    
   }
 
   public static void addMavenLibraries(IProject project, List<Library> libraries,
