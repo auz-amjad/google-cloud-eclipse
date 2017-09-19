@@ -8,6 +8,15 @@
        whether statically or dynamically --> 
   <extension point="com.google.cloud.tools.eclipse.appengine.libraries"
              id="com.google.cloud.tools.eclipse.appengine.libraries.defaultapis">
+             
+    <library 
+          id="master-container"
+          group="master"
+          name="Google APIs Master Container"
+          tooltip="localize me"
+          siteUri="https://cloud.google.com/" >
+    </library>         
+             
     <library 
           id="appengine-api"
           group="appengine"

@@ -68,9 +68,6 @@ public class CloudLibraries {
    * @return the library with the specified ID, or null if not found
    */
   public static Library getLibrary(String id) {
-    // todo this method is only called by LibraryClasspathContainerResolverService and tests.
-    // Perhaps here or in LibraryClasspathContainerResolverService is where we should 
-    // resolve the transitive dependencies
     return libraries.get(id);
   }
   

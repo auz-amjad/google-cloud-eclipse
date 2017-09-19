@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.newproject;
 
 import com.google.cloud.tools.eclipse.appengine.libraries.BuildPath;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.util.ClasspathUtil;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.InvocationTargetException;
@@ -118,12 +119,13 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
       throw new InvocationTargetException(ex);
     }
 
-    addAppEngineFacet(newProject, subMonitor.newChild(4));
+    addAppEngineFacet(newProject, subMonitor.newChild(6));
 
     if (config.getUseMaven()) {
       enableMavenNature(newProject, subMonitor.newChild(2));
     } else {
       addJunit4ToClasspath(newProject, subMonitor.newChild(2));
+      addAppEngineContainerToClasspath(newProject, subMonitor.newChild(2));
     }
 
     BuildPath.addLibraries(newProject, config.getAppEngineLibraries(), subMonitor.newChild(2));
@@ -201,6 +203,24 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
         new IClasspathAttribute[] {nonDependencyAttribute},
         false);
     ClasspathUtil.addClasspathEntry(newProject, junit4Container, monitor);
+  }
+  
+  private static void addAppEngineContainerToClasspath(IProject newProject, IProgressMonitor monitor)
+      throws CoreException {
+    IClasspathAttribute dependencyAttribute =
+        UpdateClasspathAttributeUtil.createDependencyAttribute(true);
+    
+    IPath containerPath = new Path(Library.CONTAINER_PATH_PREFIX + "/master-container");
+    
+    IClasspathEntry container = JavaCore.newContainerEntry(
+        containerPath,
+        new IAccessRule[0],
+        new IClasspathAttribute[] {dependencyAttribute},
+        true);
+    ClasspathUtil.addClasspathEntry(newProject, container, monitor);
+    
+    //A classpath container entry can be updated with JavaCore.classpathContainerChanged
+    // JavaCore.getClasspathContainer(IPath containerPath, IJavaProject project) to find the container
   }
 
 }

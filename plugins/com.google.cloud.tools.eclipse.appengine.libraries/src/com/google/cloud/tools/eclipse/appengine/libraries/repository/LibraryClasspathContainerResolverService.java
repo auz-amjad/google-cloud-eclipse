@@ -26,6 +26,7 @@ import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
 import com.google.cloud.tools.eclipse.appengine.libraries.persistence.LibraryClasspathContainerSerializer;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineRuntime;
+import com.google.cloud.tools.eclipse.util.ClasspathUtil;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.apache.maven.artifact.Artifact;
@@ -76,9 +78,9 @@ public class LibraryClasspathContainerResolverService
           getTotalWork(rawClasspath));
       for (IClasspathEntry classpathEntry : rawClasspath) {
         if (classpathEntry.getPath().segment(0).equals(Library.CONTAINER_PATH_PREFIX)) {
-          status = StatusUtil.merge(status, resolveContainer(javaProject,
-                                                             classpathEntry.getPath(),
-                                                             subMonitor.newChild(1)));
+          IStatus resolveContainerStatus =
+              resolveContainer(javaProject, classpathEntry.getPath(), subMonitor.newChild(1));
+          status = StatusUtil.merge(status, resolveContainerStatus);
         }
       }
       return status;
@@ -170,18 +172,35 @@ public class LibraryClasspathContainerResolverService
     subMonitor.subTask(Messages.getString("TaskResolveArtifacts", getLibraryDescription(library)));
     SubMonitor child = subMonitor.newChild(libraryFiles.size());
 
+    IPath masterPath = new Path(Library.CONTAINER_PATH_PREFIX + "/master-container");
+    IClasspathContainer masterContainer = JavaCore.getClasspathContainer(masterPath, javaProject);
+    IClasspathEntry[] oldEntries = masterContainer.getClasspathEntries();
+    List<IClasspathEntry> masterEntries = Arrays.asList(oldEntries);
+    
     List<IClasspathEntry> entries = new ArrayList<>();
-    for (final LibraryFile libraryFile : libraryFiles) {
+    for (LibraryFile libraryFile : libraryFiles) {
       IClasspathEntry newLibraryEntry =
           resolveLibraryFileAttachSourceAsync(javaProject, containerPath, libraryFile,
                                               sourceAttacherJobs, monitor);
       entries.add(newLibraryEntry);
+      masterEntries.add(newLibraryEntry);
       child.worked(1);
     }
     monitor.done();
     LibraryClasspathContainer container =
         new LibraryClasspathContainer(containerPath,
                                       getLibraryDescription(library), entries);
+    IClasspathAttribute dependencyAttribute =
+        UpdateClasspathAttributeUtil.createDependencyAttribute(true);
+
+    IClasspathEntry container2 = JavaCore.newContainerEntry(
+        masterPath,
+        new IAccessRule[0],
+        new IClasspathAttribute[] {dependencyAttribute},
+        true);
+    ClasspathUtil.addClasspathEntry(javaProject.getProject(), container2, monitor);
+    
+    
     return container;
   }
 
