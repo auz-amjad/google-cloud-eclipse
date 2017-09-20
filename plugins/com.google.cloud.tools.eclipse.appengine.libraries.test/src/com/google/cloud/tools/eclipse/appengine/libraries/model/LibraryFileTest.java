@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.libraries.model;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -131,5 +132,12 @@ public class LibraryFileTest {
     LibraryFile libraryFile = new LibraryFile(mavenCoordinates);
     libraryFile.setExport(false);
     assertFalse(libraryFile.isExport());
+  }
+  
+  @Test
+  public void testToString() {
+    MavenCoordinates mavenCoordinates = new MavenCoordinates("groupId", "artifactId");
+    LibraryFile libraryFile = new LibraryFile(mavenCoordinates);
+    assertEquals("groupId:artifactId:LATEST", libraryFile.toString());
   }
 }

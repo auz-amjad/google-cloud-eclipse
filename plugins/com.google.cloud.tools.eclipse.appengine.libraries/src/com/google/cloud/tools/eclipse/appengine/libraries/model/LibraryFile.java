@@ -78,4 +78,9 @@ public class LibraryFile {
   void setExport(boolean export) {
     this.export = export;
   }
+  
+  @Override
+  public String toString() {
+    return this.mavenCoordinates.toStringCoordinates();
+  }
 }

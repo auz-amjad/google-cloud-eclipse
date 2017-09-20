@@ -100,6 +100,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
   }
 
   @Override
+  // todo is the page calling this multiple times; once per library?
   public IClasspathEntry[] getNewContainers() {
     List<Library> libraries = new ArrayList<>(librariesSelector.getSelectedLibraries());
     if (libraries == null || libraries.isEmpty()) {
