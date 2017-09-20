@@ -92,7 +92,7 @@ limitations under the License.
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                <xs:element ref="libraryDependency" />
             </xs:choice>
-            <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
                <xs:element ref="libraryFile" />
             </xs:choice>
          </xs:sequence>
