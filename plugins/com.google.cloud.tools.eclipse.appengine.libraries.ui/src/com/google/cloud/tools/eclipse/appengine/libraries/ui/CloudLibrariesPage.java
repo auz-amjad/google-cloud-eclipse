@@ -100,7 +100,6 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
   }
 
   @Override
-  // todo is the page calling this multiple times; once per library?
   public IClasspathEntry[] getNewContainers() {
     List<Library> libraries = new ArrayList<>(librariesSelector.getSelectedLibraries());
     if (libraries == null || libraries.isEmpty()) {
@@ -113,8 +112,8 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         return new IClasspathEntry[0];
       } else {
         Set<LibraryFile> masterFiles = new HashSet<>();
-        // todo may need to finish #2343 to make this work 
         for (Library library : libraries) {
+          logger.info("Adding " + library);
           if (!library.isResolved()) {
             library.resolveDependencies();
           }
@@ -123,6 +122,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         
         // todo method or constant
         Library masterLibrary = CloudLibraries.getLibrary("master-container"); // NON-NLS-1
+        masterFiles.addAll(masterLibrary.getLibraryFiles());
         masterLibrary.setLibraryFiles(masterFiles);
         ArrayList<Library> masterLibraries = new ArrayList<>();
         masterLibraries.add(masterLibrary);
@@ -131,6 +131,10 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         IClasspathEntry[] added =
             BuildPath.listAdditionalLibraries(project, masterLibraries, new NullProgressMonitor());
 
+        for (LibraryFile file : masterFiles) {
+          logger.info("  Added file: " + file);
+        }
+        
         return added;
       }
     } catch (CoreException ex) {
