@@ -115,7 +115,7 @@ public final class Library {
   /**
    * @param libraryFiles artifacts associated with this library, cannot be <code>null</code>
    */
-  synchronized void setLibraryFiles(List<LibraryFile> libraryFiles) {
+  public synchronized void setLibraryFiles(List<LibraryFile> libraryFiles) {
     Preconditions.checkNotNull(libraryFiles);
     this.libraryFiles = new ArrayList<>(libraryFiles);
   }

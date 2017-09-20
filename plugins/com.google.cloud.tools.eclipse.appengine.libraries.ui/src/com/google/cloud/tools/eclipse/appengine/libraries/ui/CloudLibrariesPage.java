@@ -22,14 +22,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension2;
@@ -41,7 +36,9 @@ import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
 import com.google.cloud.tools.eclipse.appengine.libraries.BuildPath;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
 import com.google.cloud.tools.eclipse.util.MavenUtils;
 
@@ -102,7 +99,6 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
 
   @Override
   public IClasspathEntry[] getNewContainers() {
-    logger.log(Level.INFO, "Getting containers");
     List<Library> libraries = new ArrayList<>(librariesSelector.getSelectedLibraries());
     if (libraries == null || libraries.isEmpty()) {
       return null;
@@ -113,52 +109,28 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         BuildPath.addMavenLibraries(project.getProject(), libraries, new NullProgressMonitor());
         return new IClasspathEntry[0];
       } else {
+        List<LibraryFile> masterFiles = new ArrayList<>();
         for (Library library : libraries) {
           if (!library.isResolved()) {
             library.resolveDependencies();
           }
+          masterFiles.addAll(library.getLibraryFiles());
         }
+        
+        Library masterLibrary = CloudLibraries.getLibrary("master-container"); // NON-NLS-1
+        masterLibrary.setLibraryFiles(masterFiles);
+        ArrayList<Library> masterLibraries = new ArrayList<>();
+        masterLibraries.add(masterLibrary);
+        
+        // Todo This takes a long time. Use a real progress monitor
         IClasspathEntry[] added =
-            BuildPath.listAdditionalLibraries(project, libraries, new NullProgressMonitor());
-        
-        // todo here try adding to the master container
-        IClasspathEntry master = getMasterContainerEntry();
-        updateClasspath(master); 
-        
+            BuildPath.listAdditionalLibraries(project, masterLibraries, new NullProgressMonitor());
+
         return added;
       }
     } catch (CoreException ex) {
-      logger.log(Level.WARNING, "Error adding libraries to project", ex);
       return new IClasspathEntry[0];
     }
   }
-  
-  private void updateClasspath(IClasspathEntry containerEntry) {
-    IPath path = containerEntry.getPath();
-    NullProgressMonitor monitor = new NullProgressMonitor();
-    IClasspathContainer container = new GoogleCloudClasspathContainer(path, );
-    JavaCore.setClasspathContainer(path, new IJavaProject[] {project},
-      new IClasspathContainer[] {container }, monitor);
-        saveContainerState(project, container);
-    }
-  }
-  
-  private IClasspathEntry getMasterContainerEntry() { 
-    IPath containerPath = new Path(Library.CONTAINER_PATH_PREFIX + "/master-container");
-    try {
-      for (IClasspathEntry entry : project.getRawClasspath()) {
-        logger.log(Level.INFO, "Looking for master container in " + entry);
-        if (containerPath.equals(entry.getPath())) {
-          logger.log(Level.INFO, "Found master container");
-            return entry;
-        }
-      }
-    } catch(JavaModelException ex) {
-      return null;
-    }
-    
-    // todo create new master container
-    return null;
-  } 
 
 }
