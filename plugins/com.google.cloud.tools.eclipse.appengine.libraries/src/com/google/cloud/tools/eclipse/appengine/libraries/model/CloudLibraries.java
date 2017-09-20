@@ -70,6 +70,13 @@ public class CloudLibraries {
   public static Library getLibrary(String id) {
     return libraries.get(id);
   }
+
+  /**
+   * @return the uber container for all Google APIs
+   */
+  public static Library getMasterLibrary() {
+    return CloudLibraries.getLibrary("master-container"); // NON-NLS-1;
+  }  
   
   private static ImmutableMap<String, Library> loadLibraryDefinitions() {
     IConfigurationElement[] elements = RegistryFactory.getRegistry().getConfigurationElementsFor(

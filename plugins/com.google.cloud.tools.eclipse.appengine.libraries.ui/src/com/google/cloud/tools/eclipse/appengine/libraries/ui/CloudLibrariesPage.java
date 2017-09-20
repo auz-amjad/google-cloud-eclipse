@@ -114,15 +114,13 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
       } else {
         Set<LibraryFile> masterFiles = new HashSet<>();
         for (Library library : libraries) {
-          logger.info("Adding " + library);
           if (!library.isResolved()) {
             library.resolveDependencies();
           }
           masterFiles.addAll(library.getLibraryFiles());
         }
-        
-        // todo method or constant
-        Library masterLibrary = CloudLibraries.getLibrary("master-container"); // NON-NLS-1
+
+        Library masterLibrary = CloudLibraries.getMasterLibrary();
         if (!masterLibrary.getLibraryFiles().isEmpty()) {
           masterFiles.addAll(masterLibrary.getLibraryFiles());
         }
@@ -134,17 +132,11 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         IClasspathEntry[] added =
             BuildPath.addLibraries(project, masterLibraries, new NullProgressMonitor());
         
-        
         return added;
       }
     } catch (CoreException ex) {
       return new IClasspathEntry[0];
     }
-  }
-
-  private void updateClasspath(Library masterLibrary) {
-    // TODO Auto-generated method stub
-    
   }
 
 }
