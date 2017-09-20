@@ -17,7 +17,9 @@
 package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -109,7 +111,8 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         BuildPath.addMavenLibraries(project.getProject(), libraries, new NullProgressMonitor());
         return new IClasspathEntry[0];
       } else {
-        List<LibraryFile> masterFiles = new ArrayList<>();
+        Set<LibraryFile> masterFiles = new HashSet<>();
+        // todo may need to finish #2343 to make this work 
         for (Library library : libraries) {
           if (!library.isResolved()) {
             library.resolveDependencies();
@@ -117,12 +120,13 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
           masterFiles.addAll(library.getLibraryFiles());
         }
         
+        // todo method or constant
         Library masterLibrary = CloudLibraries.getLibrary("master-container"); // NON-NLS-1
         masterLibrary.setLibraryFiles(masterFiles);
         ArrayList<Library> masterLibraries = new ArrayList<>();
         masterLibraries.add(masterLibrary);
         
-        // Todo This takes a long time. Use a real progress monitor
+        // todo This takes a long time. Use a real progress monitor
         IClasspathEntry[] added =
             BuildPath.listAdditionalLibraries(project, masterLibraries, new NullProgressMonitor());
 
