@@ -12,9 +12,8 @@
     <library 
           id="master-container"
           group="master"
-          name="Google APIs Master Container"
-          tooltip="localize me"
-          siteUri="https://cloud.google.com/" >
+          name="Google APIs Container"
+          siteUri="https://googlecloudplatform.github.io/google-cloud-java/latest/index.html" >
     </library>         
              
     <library 

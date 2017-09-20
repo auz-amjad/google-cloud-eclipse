@@ -123,9 +123,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         
         // todo method or constant
         Library masterLibrary = CloudLibraries.getLibrary("master-container"); // NON-NLS-1
-        boolean needsUpdate = false;
         if (!masterLibrary.getLibraryFiles().isEmpty()) {
-          needsUpdate = true; // because there was a pre-existing library
           masterFiles.addAll(masterLibrary.getLibraryFiles());
         }
         masterLibrary.setLibraryFiles(masterFiles);
@@ -134,7 +132,6 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         
         // todo This takes a long time. Use a real progress monitor
         IClasspathEntry[] added =
-//          BuildPath.listAdditionalLibraries(project, masterLibraries, new NullProgressMonitor());
             BuildPath.addLibraries(project, masterLibraries, new NullProgressMonitor());
         
         
