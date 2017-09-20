@@ -22,9 +22,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension2;
@@ -97,11 +102,12 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
 
   @Override
   public IClasspathEntry[] getNewContainers() {
+    logger.log(Level.INFO, "Getting containers");
     List<Library> libraries = new ArrayList<>(librariesSelector.getSelectedLibraries());
     if (libraries == null || libraries.isEmpty()) {
       return null;
     }
-  
+
     try {
       if (MavenUtils.hasMavenNature(project.getProject())) {
         BuildPath.addMavenLibraries(project.getProject(), libraries, new NullProgressMonitor());
@@ -114,6 +120,11 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         }
         IClasspathEntry[] added =
             BuildPath.listAdditionalLibraries(project, libraries, new NullProgressMonitor());
+        
+        // todo here try adding to the master container
+        IClasspathEntry master = getMasterContainerEntry();
+        updateClasspath(master); 
+        
         return added;
       }
     } catch (CoreException ex) {
@@ -121,5 +132,33 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
       return new IClasspathEntry[0];
     }
   }
+  
+  private void updateClasspath(IClasspathEntry containerEntry) {
+    IPath path = containerEntry.getPath();
+    NullProgressMonitor monitor = new NullProgressMonitor();
+    IClasspathContainer container = new GoogleCloudClasspathContainer(path, );
+    JavaCore.setClasspathContainer(path, new IJavaProject[] {project},
+      new IClasspathContainer[] {container }, monitor);
+        saveContainerState(project, container);
+    }
+  }
+  
+  private IClasspathEntry getMasterContainerEntry() { 
+    IPath containerPath = new Path(Library.CONTAINER_PATH_PREFIX + "/master-container");
+    try {
+      for (IClasspathEntry entry : project.getRawClasspath()) {
+        logger.log(Level.INFO, "Looking for master container in " + entry);
+        if (containerPath.equals(entry.getPath())) {
+          logger.log(Level.INFO, "Found master container");
+            return entry;
+        }
+      }
+    } catch(JavaModelException ex) {
+      return null;
+    }
+    
+    // todo create new master container
+    return null;
+  } 
 
 }

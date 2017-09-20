@@ -110,7 +110,7 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
     description.setLocationURI(location);
 
     String operationLabel = getDescription();
-    SubMonitor subMonitor = SubMonitor.convert(monitor, operationLabel, 100);
+    SubMonitor subMonitor = SubMonitor.convert(monitor, operationLabel, 120);
     CreateProjectOperation operation = new CreateProjectOperation(description, operationLabel);
     try {
       operation.execute(subMonitor.newChild(10), uiInfoAdapter);
@@ -122,15 +122,15 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
     addAppEngineFacet(newProject, subMonitor.newChild(6));
 
     if (config.getUseMaven()) {
-      enableMavenNature(newProject, subMonitor.newChild(2));
+      enableMavenNature(newProject, subMonitor.newChild(4));
     } else {
       addJunit4ToClasspath(newProject, subMonitor.newChild(2));
       addAppEngineContainerToClasspath(newProject, subMonitor.newChild(2));
     }
 
-    BuildPath.addLibraries(newProject, config.getAppEngineLibraries(), subMonitor.newChild(2));
+    BuildPath.addLibraries(newProject, config.getAppEngineLibraries(), subMonitor.newChild(5));
 
-    fixTestSourceDirectorySettings(newProject, subMonitor.newChild(2));
+    fixTestSourceDirectorySettings(newProject, subMonitor.newChild(5));
   }
 
   private void fixTestSourceDirectorySettings(IProject newProject, IProgressMonitor monitor)
@@ -218,9 +218,6 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
         new IClasspathAttribute[] {dependencyAttribute},
         true);
     ClasspathUtil.addClasspathEntry(newProject, container, monitor);
-    
-    //A classpath container entry can be updated with JavaCore.classpathContainerChanged
-    // JavaCore.getClasspathContainer(IPath containerPath, IJavaProject project) to find the container
   }
 
 }
