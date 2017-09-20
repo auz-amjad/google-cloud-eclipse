@@ -96,6 +96,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
 
   @Override
   public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
+    // todo can we use the currentEntries to tick the checkboxes in the library selector group?
     this.project = project;
   }
 
@@ -122,24 +123,31 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         
         // todo method or constant
         Library masterLibrary = CloudLibraries.getLibrary("master-container"); // NON-NLS-1
-        masterFiles.addAll(masterLibrary.getLibraryFiles());
+        boolean needsUpdate = false;
+        if (!masterLibrary.getLibraryFiles().isEmpty()) {
+          needsUpdate = true; // because there was a pre-existing library
+          masterFiles.addAll(masterLibrary.getLibraryFiles());
+        }
         masterLibrary.setLibraryFiles(masterFiles);
         ArrayList<Library> masterLibraries = new ArrayList<>();
         masterLibraries.add(masterLibrary);
         
         // todo This takes a long time. Use a real progress monitor
         IClasspathEntry[] added =
-            BuildPath.listAdditionalLibraries(project, masterLibraries, new NullProgressMonitor());
-
-        for (LibraryFile file : masterFiles) {
-          logger.info("  Added file: " + file);
-        }
+//          BuildPath.listAdditionalLibraries(project, masterLibraries, new NullProgressMonitor());
+            BuildPath.addLibraries(project, masterLibraries, new NullProgressMonitor());
+        
         
         return added;
       }
     } catch (CoreException ex) {
       return new IClasspathEntry[0];
     }
+  }
+
+  private void updateClasspath(Library masterLibrary) {
+    // TODO Auto-generated method stub
+    
   }
 
 }
