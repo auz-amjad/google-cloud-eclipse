@@ -36,7 +36,7 @@ public class AppEngineLibrariesPageTest {
   
   @Rule
   public TestProjectCreator projectCreator = new TestProjectCreator().withFacetVersions(
-      JavaFacet.VERSION_1_7, WebFacetUtils.WEB_25);
+      JavaFacet.VERSION_1_7);
 
   @Test
   public void testConstructor() {
