@@ -12,8 +12,8 @@
     <library 
           id="master-container"
           group="master"
-          name="Google APIs Container"
-          siteUri="https://googlecloudplatform.github.io/google-cloud-java/latest/index.html" >
+          name="Google APIs"
+          siteUri="https://googlecloudplatform.github.io/google-cloud-java/latest/" >
     </library>         
              
     <library 

@@ -17,10 +17,17 @@
 package com.google.cloud.tools.eclipse.appengine.newproject;
 
 import com.google.cloud.tools.eclipse.appengine.libraries.BuildPath;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
 import com.google.cloud.tools.eclipse.util.ClasspathUtil;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.commands.ExecutionException;
@@ -122,11 +129,31 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
 
     if (config.getUseMaven()) {
       enableMavenNature(newProject, subMonitor.newChild(4));
+      BuildPath.addLibraries(newProject, config.getAppEngineLibraries(), subMonitor.newChild(5));
     } else {
       addJunit4ToClasspath(newProject, subMonitor.newChild(2));
-    }
+      IJavaProject javaProject = JavaCore.create(newProject);
+      
+      List<Library> libraries = config.getAppEngineLibraries();
+      // todo duplicates some code in CloudLibrariesPage
+      Set<LibraryFile> masterFiles = new HashSet<>();
+      for (Library library : libraries) {
+        if (!library.isResolved()) {
+          library.resolveDependencies();
+        }
+        masterFiles.addAll(library.getLibraryFiles());
+      }
 
-    BuildPath.addLibraries(newProject, config.getAppEngineLibraries(), subMonitor.newChild(5));
+      Library masterLibrary = CloudLibraries.getMasterLibrary();
+      // new project so no existing files in master yet
+      masterLibrary.setLibraryFiles(masterFiles);
+      
+      // todo pointless; refactor so addLibraries takes a Collection<LibraryFile>
+      ArrayList<Library> masterLibraries = new ArrayList<>();
+      masterLibraries.add(masterLibrary);
+      
+      BuildPath.addLibraries(javaProject, masterLibraries, subMonitor.newChild(5));
+    }
 
     fixTestSourceDirectorySettings(newProject, subMonitor.newChild(5));
   }

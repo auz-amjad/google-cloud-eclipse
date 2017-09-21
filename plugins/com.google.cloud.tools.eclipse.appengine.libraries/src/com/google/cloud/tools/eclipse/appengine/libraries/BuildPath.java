@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 
 public class BuildPath {
 
+  // todo this method seems not needed any more; refactor away
   public static void addLibraries(IProject project, List<Library> libraries,
       IProgressMonitor monitor) throws CoreException {
 

@@ -121,6 +121,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         }
 
         Library masterLibrary = CloudLibraries.getMasterLibrary();
+        // todo if clause not truly needed here
         if (!masterLibrary.getLibraryFiles().isEmpty()) {
           masterFiles.addAll(masterLibrary.getLibraryFiles());
         }
