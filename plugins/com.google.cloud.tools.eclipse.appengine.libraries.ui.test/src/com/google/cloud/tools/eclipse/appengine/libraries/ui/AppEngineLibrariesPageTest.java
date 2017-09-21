@@ -18,7 +18,6 @@ package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jst.common.project.facet.core.JavaFacet;
-import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.swt.widgets.Shell;
 import org.junit.Assert;
 import org.junit.Rule;
