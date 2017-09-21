@@ -92,11 +92,11 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
 
   @Override
   public void setSelection(IClasspathEntry containerEntry) {
+    // todo can we use the containerEntry to tick the checkboxes in the library selector group?
   }
 
   @Override
   public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
-    // todo can we use the currentEntries to tick the checkboxes in the library selector group?
     this.project = project;
   }
 
@@ -121,10 +121,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         }
 
         Library masterLibrary = CloudLibraries.getMasterLibrary();
-        // todo if clause not truly needed here
-        if (!masterLibrary.getLibraryFiles().isEmpty()) {
-          masterFiles.addAll(masterLibrary.getLibraryFiles());
-        }
+        masterFiles.addAll(masterLibrary.getLibraryFiles());
         masterLibrary.setLibraryFiles(masterFiles);
         ArrayList<Library> masterLibraries = new ArrayList<>();
         masterLibraries.add(masterLibrary);
