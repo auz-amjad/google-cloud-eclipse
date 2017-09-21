@@ -18,7 +18,6 @@ package com.google.cloud.tools.eclipse.appengine.libraries;
 
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.util.ClasspathUtil;
-import com.google.cloud.tools.eclipse.util.MavenUtils;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -48,23 +47,13 @@ import org.xml.sax.SAXException;
 
 public class BuildPath {
 
-  // todo this method seems not needed any more; refactor away
-  public static void addLibraries(IProject project, List<Library> libraries,
+  public static void addMavenLibraries(IProject project, List<Library> libraries,
       IProgressMonitor monitor) throws CoreException {
-
+    
     if (libraries.isEmpty()) {
       return;
     }
-    if (MavenUtils.hasMavenNature(project)) {
-      addMavenLibraries(project, libraries, monitor);
-    } else {
-      IJavaProject javaProject = JavaCore.create(project);
-      addLibraries(javaProject, libraries, monitor);
-    }
-  }
-
-  public static void addMavenLibraries(IProject project, List<Library> libraries,
-      IProgressMonitor monitor) throws CoreException {
+    
     // see m2e-core/org.eclipse.m2e.core.ui/src/org/eclipse/m2e/core/ui/internal/actions/AddDependencyAction.java
     // m2e-core/org.eclipse.m2e.core.ui/src/org/eclipse/m2e/core/ui/internal/editing/AddDependencyOperation.java
 
@@ -80,13 +69,12 @@ public class BuildPath {
   }
 
   /**
-   * @return the entries added to the classpath.
-   *     Does not include entries previously present in classpath.
+   * @return the entries added to the classpath. Does not include entries previously present in
+   *         classpath.
    */
-  public static IClasspathEntry[] addLibraries(
+  public static IClasspathEntry[] addNativeLibraries(
       IJavaProject javaProject, List<Library> libraries, IProgressMonitor monitor)
           throws JavaModelException, CoreException {
-    
     return prepareLibraries(javaProject, libraries, monitor, true);
   }
 
@@ -116,15 +104,6 @@ public class BuildPath {
     return newEntries.toArray(new IClasspathEntry[0]);
   }
 
-  /**
-   * @return the entries to be added to the classpath. Does not add them to the classpath.
-   */
-  public static IClasspathEntry[] listAdditionalLibraries(
-      IJavaProject javaProject, List<Library> libraries, IProgressMonitor monitor)
-          throws JavaModelException, CoreException {
-    return prepareLibraries(javaProject, libraries, monitor, false);
-  }
-
   private static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
     IClasspathAttribute[] classpathAttributes = new IClasspathAttribute[1];
     if (library.isExport()) {
@@ -134,11 +113,8 @@ public class BuildPath {
       classpathAttributes[0] = UpdateClasspathAttributeUtil.createNonDependencyAttribute();
     }
 
-    IClasspathEntry libraryContainer = JavaCore.newContainerEntry(library.getContainerPath(),
-                                                                  new IAccessRule[0],
-                                                                  classpathAttributes,
-                                                                  false);
-    return libraryContainer;
+    return JavaCore.newContainerEntry(library.getContainerPath(), new IAccessRule[0],
+        classpathAttributes, false);
   }
 
   private static void runContainerResolverJob(IJavaProject javaProject) {

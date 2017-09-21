@@ -50,37 +50,28 @@ public class BuildPathTest {
   }
 
   @Test
-  public void testAddLibraries_emptyList() throws CoreException {
+  public void testAddMavenLibraries_emptyList() throws CoreException {
     IProject project = null;
-    BuildPath.addLibraries(project, libraries, monitor);
+    BuildPath.addMavenLibraries(project, libraries, monitor);
   }
 
   @Test
   public void testAddLibraries() throws CoreException {
     Library library = new Library("libraryId");
     libraries.add(library);
-    IClasspathEntry[] result = BuildPath.addLibraries(project, libraries, monitor);
+    IClasspathEntry[] result = BuildPath.addNativeLibraries(project, libraries, monitor);
     Assert.assertEquals(1, result.length);
     Assert.assertEquals(initialClasspathSize + 1, project.getRawClasspath().length);
-  }
-
-  @Test
-  public void testListAdditionalLibraries() throws CoreException {
-    Library library = new Library("libraryId");
-    libraries.add(library);
-    IClasspathEntry[] result = BuildPath.listAdditionalLibraries(project, libraries, monitor);
-    Assert.assertEquals(1, result.length);
-    Assert.assertEquals(initialClasspathSize, project.getRawClasspath().length);
   }
 
   @Test
   public void testAddLibraries_noDuplicates() throws CoreException {
     Library library = new Library("libraryId");
     libraries.add(library);
-    IClasspathEntry[] setup = BuildPath.addLibraries(project, libraries, monitor);
+    IClasspathEntry[] setup = BuildPath.addNativeLibraries(project, libraries, monitor);
     Assert.assertEquals(1, setup.length);
 
-    IClasspathEntry[] result = BuildPath.addLibraries(project, libraries, monitor);
+    IClasspathEntry[] result = BuildPath.addNativeLibraries(project, libraries, monitor);
     Assert.assertEquals(0, result.length);
     Assert.assertEquals(initialClasspathSize + 1, project.getRawClasspath().length);
   }
@@ -89,12 +80,12 @@ public class BuildPathTest {
   public void testAddLibraries_withDuplicates() throws CoreException {
     Library library1 = new Library("library1");
     libraries.add(library1);
-    IClasspathEntry[] setup = BuildPath.addLibraries(project, libraries, monitor);
+    IClasspathEntry[] setup = BuildPath.addNativeLibraries(project, libraries, monitor);
     Assert.assertEquals(1, setup.length);
 
     Library library2 = new Library("library2");
     libraries.add(library2);
-    IClasspathEntry[] result = BuildPath.addLibraries(project, libraries, monitor);
+    IClasspathEntry[] result = BuildPath.addNativeLibraries(project, libraries, monitor);
 
     Assert.assertEquals(1, result.length);
     Assert.assertTrue(result[0].getPath().toString()

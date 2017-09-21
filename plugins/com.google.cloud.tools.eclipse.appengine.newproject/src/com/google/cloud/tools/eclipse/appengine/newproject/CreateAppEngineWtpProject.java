@@ -129,7 +129,7 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
 
     if (config.getUseMaven()) {
       enableMavenNature(newProject, subMonitor.newChild(4));
-      BuildPath.addLibraries(newProject, config.getAppEngineLibraries(), subMonitor.newChild(5));
+      BuildPath.addMavenLibraries(newProject, config.getAppEngineLibraries(), subMonitor.newChild(5));
     } else {
       addJunit4ToClasspath(newProject, subMonitor.newChild(2));
       IJavaProject javaProject = JavaCore.create(newProject);
@@ -152,7 +152,7 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
       ArrayList<Library> masterLibraries = new ArrayList<>();
       masterLibraries.add(masterLibrary);
       
-      BuildPath.addLibraries(javaProject, masterLibraries, subMonitor.newChild(5));
+      BuildPath.addNativeLibraries(javaProject, masterLibraries, subMonitor.newChild(5));
     }
 
     fixTestSourceDirectorySettings(newProject, subMonitor.newChild(5));
