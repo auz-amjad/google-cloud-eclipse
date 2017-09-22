@@ -62,6 +62,14 @@ public class BuildPathTest {
     Assert.assertEquals(1, result.length);
     Assert.assertEquals(initialClasspathSize + 1, project.getRawClasspath().length);
   }
+  
+  @Test
+  public void testListNativeLibrary() throws CoreException {
+    Library library = new Library("libraryId");
+    IClasspathEntry[] result = BuildPath.listNativeLibrary(project, library);
+    Assert.assertEquals(1, result.length);
+    Assert.assertEquals(initialClasspathSize, project.getRawClasspath().length);
+  }
 
   @Test
   public void testAddLibraries_noDuplicates() throws CoreException {
