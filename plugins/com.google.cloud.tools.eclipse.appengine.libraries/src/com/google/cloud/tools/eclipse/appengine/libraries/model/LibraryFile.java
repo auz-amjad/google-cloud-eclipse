@@ -81,7 +81,7 @@ public class LibraryFile implements Comparable<LibraryFile> {
   
   @Override
   public String toString() {
-    return this.mavenCoordinates.toStringCoordinates();
+    return mavenCoordinates.toStringCoordinates();
   }
 
   @Override
