@@ -69,38 +69,29 @@ public class BuildPath {
   }
 
   /**
-   * @return the entries added to the classpath. Does not include entries previously present in
-   *         classpath.
+   * Returns the entries added to the classpath. Does not include entries previously present in
+   *     classpath.
    */
-  public static IClasspathEntry[] addNativeLibraries(
-      IJavaProject javaProject, List<Library> libraries, IProgressMonitor monitor)
+  public static IClasspathEntry[] addNativeLibrary(
+      IJavaProject javaProject, Library library, IProgressMonitor monitor)
           throws JavaModelException, CoreException {
-    return prepareLibraries(javaProject, libraries, monitor, true);
-  }
-
-  private static IClasspathEntry[] prepareLibraries(IJavaProject javaProject,
-      List<Library> libraries, IProgressMonitor monitor, boolean addToClasspath)
-          throws JavaModelException, CoreException {
+    
     SubMonitor subMonitor = SubMonitor.convert(monitor,
         Messages.getString("adding.app.engine.libraries"), //$NON-NLS-1$
-        libraries.size() + 1); // + 1 because we pass the submonitor along below
-
+        2);
+    
     List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
-
+    
     List<IClasspathEntry> newEntries = new ArrayList<>();
-    for (Library library : libraries) {
-      IClasspathEntry libraryContainer = makeClasspathEntry(library);
-      if (!rawClasspath.contains(libraryContainer)) {
-        newEntries.add(libraryContainer);
-      }
-      subMonitor.worked(1);
+    IClasspathEntry libraryContainer = makeClasspathEntry(library);
+    if (!rawClasspath.contains(libraryContainer)) {
+      newEntries.add(libraryContainer);
     }
-
-    if (addToClasspath) {
-      ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
-      runContainerResolverJob(javaProject);
-    }
-
+    subMonitor.worked(1);
+    
+    ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
+    runContainerResolverJob(javaProject);
+    
     return newEntries.toArray(new IClasspathEntry[0]);
   }
 

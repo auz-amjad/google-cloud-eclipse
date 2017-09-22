@@ -27,7 +27,7 @@ import java.util.List;
  * A jar file that is downloaded from the location defined by {@link MavenCoordinates}. It can have
  * associated filters to control visibility of classes and packages contained in the jar file.
  */
-public class LibraryFile {
+public class LibraryFile implements Comparable<LibraryFile> {
 
   private List<Filter> filters = Collections.emptyList();
   private MavenCoordinates mavenCoordinates;
@@ -83,4 +83,25 @@ public class LibraryFile {
   public String toString() {
     return this.mavenCoordinates.toStringCoordinates();
   }
+
+  @Override
+  public int compareTo(LibraryFile other) {
+    return this.mavenCoordinates.toStringCoordinates()
+        .compareTo(other.mavenCoordinates.toStringCoordinates());
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other == null || !(other instanceof LibraryFile)) {
+      return false;
+    }
+    return this.mavenCoordinates.toStringCoordinates()
+        .equals((((LibraryFile) other).mavenCoordinates.toStringCoordinates()));
+  }
+  
+  @Override
+  public int hashCode() {
+    return this.mavenCoordinates.toStringCoordinates().hashCode();
+  }
+
 }

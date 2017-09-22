@@ -17,9 +17,9 @@
 package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -112,7 +112,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         BuildPath.addMavenLibraries(project.getProject(), libraries, new NullProgressMonitor());
         return new IClasspathEntry[0];
       } else {
-        Set<LibraryFile> masterFiles = new HashSet<>();
+        SortedSet<LibraryFile> masterFiles = new TreeSet<>();
         for (Library library : libraries) {
           if (!library.isResolved()) {
             library.resolveDependencies();
@@ -122,13 +122,11 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
 
         Library masterLibrary = CloudLibraries.getMasterLibrary();
         masterFiles.addAll(masterLibrary.getLibraryFiles());
-        masterLibrary.setLibraryFiles(masterFiles);
-        ArrayList<Library> masterLibraries = new ArrayList<>();
-        masterLibraries.add(masterLibrary);
+        masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
         
         // todo This takes a long time. Use a real progress monitor
         IClasspathEntry[] added =
-            BuildPath.addNativeLibraries(project, masterLibraries, new NullProgressMonitor());
+            BuildPath.addNativeLibrary(project, masterLibrary, new NullProgressMonitor());
         
         return added;
       }

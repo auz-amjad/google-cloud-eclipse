@@ -25,9 +25,9 @@ import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.commands.ExecutionException;
@@ -136,7 +136,7 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
       
       List<Library> libraries = config.getAppEngineLibraries();
       // todo duplicates some code in CloudLibrariesPage
-      Set<LibraryFile> masterFiles = new HashSet<>();
+      SortedSet<LibraryFile> masterFiles = new TreeSet<>();
       for (Library library : libraries) {
         if (!library.isResolved()) {
           library.resolveDependencies();
@@ -146,13 +146,9 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
 
       Library masterLibrary = CloudLibraries.getMasterLibrary();
       // new project so no existing files in master yet
-      masterLibrary.setLibraryFiles(masterFiles);
+      masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
       
-      // todo pointless; refactor so addLibraries takes a Collection<LibraryFile>
-      ArrayList<Library> masterLibraries = new ArrayList<>();
-      masterLibraries.add(masterLibrary);
-      
-      BuildPath.addNativeLibraries(javaProject, masterLibraries, subMonitor.newChild(5));
+      BuildPath.addNativeLibrary(javaProject, masterLibrary, subMonitor.newChild(5));
     }
 
     fixTestSourceDirectorySettings(newProject, subMonitor.newChild(5));
