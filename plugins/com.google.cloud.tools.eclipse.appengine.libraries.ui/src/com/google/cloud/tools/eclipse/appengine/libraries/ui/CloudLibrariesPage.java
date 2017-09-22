@@ -120,7 +120,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
           masterFiles.addAll(library.getLibraryFiles());
         }
 
-        Library masterLibrary = CloudLibraries.getMasterLibrary();
+        Library masterLibrary = CloudLibraries.getMasterLibrary(project);
         masterFiles.addAll(masterLibrary.getLibraryFiles());
         masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
         
