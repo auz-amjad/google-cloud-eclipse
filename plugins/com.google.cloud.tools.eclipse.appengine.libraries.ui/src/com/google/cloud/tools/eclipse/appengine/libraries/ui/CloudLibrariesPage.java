@@ -124,9 +124,7 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         masterFiles.addAll(masterLibrary.getLibraryFiles());
         masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
         
-        // todo This takes a long time. Use a real progress monitor
-        IClasspathEntry[] added =
-            BuildPath.addNativeLibrary(project, masterLibrary, new NullProgressMonitor());
+        IClasspathEntry[] added = BuildPath.listNativeLibrary(project, masterLibrary);
         
         return added;
       }

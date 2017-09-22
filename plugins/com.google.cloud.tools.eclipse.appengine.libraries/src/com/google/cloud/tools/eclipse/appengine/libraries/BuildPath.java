@@ -72,21 +72,14 @@ public class BuildPath {
    * Returns the entries added to the classpath. Does not include entries previously present in
    *     classpath.
    */
-  public static IClasspathEntry[] addNativeLibrary(
-      IJavaProject javaProject, Library library, IProgressMonitor monitor)
-          throws JavaModelException, CoreException {
+  public static IClasspathEntry[] addNativeLibrary(IJavaProject javaProject, Library library,
+      IProgressMonitor monitor) throws CoreException {
     
     SubMonitor subMonitor = SubMonitor.convert(monitor,
         Messages.getString("adding.app.engine.libraries"), //$NON-NLS-1$
         2);
     
-    List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
-    
-    List<IClasspathEntry> newEntries = new ArrayList<>();
-    IClasspathEntry libraryContainer = makeClasspathEntry(library);
-    if (!rawClasspath.contains(libraryContainer)) {
-      newEntries.add(libraryContainer);
-    }
+    List<IClasspathEntry> newEntries = readEntries(javaProject, library);
     subMonitor.worked(1);
     
     ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
@@ -94,6 +87,28 @@ public class BuildPath {
     
     return newEntries.toArray(new IClasspathEntry[0]);
   }
+
+  private static List<IClasspathEntry> readEntries(IJavaProject javaProject, Library library)
+      throws JavaModelException, CoreException {
+    List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
+    List<IClasspathEntry> newEntries = new ArrayList<>();
+    IClasspathEntry libraryContainer = makeClasspathEntry(library);
+    if (!rawClasspath.contains(libraryContainer)) {
+      newEntries.add(libraryContainer);
+    }
+    return newEntries;
+  }
+  
+  /**
+   * Returns the entries added to the classpath. Does not add them to the classpath.
+   */
+  public static IClasspathEntry[] listNativeLibrary(IJavaProject javaProject, Library library)
+      throws CoreException {
+    
+    List<IClasspathEntry> newEntries = readEntries(javaProject, library);
+    return newEntries.toArray(new IClasspathEntry[0]);
+  }
+
 
   private static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
     IClasspathAttribute[] classpathAttributes = new IClasspathAttribute[1];
