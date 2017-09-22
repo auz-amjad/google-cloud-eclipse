@@ -104,8 +104,8 @@ public class BuildPath {
    */
   public static IClasspathEntry[] listNativeLibrary(IJavaProject javaProject, Library library)
       throws CoreException {
-    
     List<IClasspathEntry> newEntries = readEntries(javaProject, library);
+    runContainerResolverJob(javaProject);
     return newEntries.toArray(new IClasspathEntry[0]);
   }
 
