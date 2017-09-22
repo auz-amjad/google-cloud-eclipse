@@ -81,7 +81,7 @@ public class CreateAppEngineStandardWtpProjectTest extends CreateAppEngineWtpPro
 
   private void assertAppEngineApiSdkOnClasspath() throws CoreException {
     IJavaProject javaProject = JavaCore.create(project);
-    Library apisLibrary = CloudLibraries.getMasterLibrary();
+    Library apisLibrary = CloudLibraries.getMasterLibrary(javaProject);
     for (IClasspathEntry entry : javaProject.getRawClasspath()) {
       if (entry.getPath().toString()
           .equals("com.google.cloud.tools.eclipse.appengine.libraries/master-container")) {

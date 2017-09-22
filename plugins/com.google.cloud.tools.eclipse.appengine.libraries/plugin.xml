@@ -7,14 +7,7 @@
   <!-- todo the dependency tracking is getting ridiculous. Pull this from Maven Central,
        whether statically or dynamically --> 
   <extension point="com.google.cloud.tools.eclipse.appengine.libraries"
-             id="com.google.cloud.tools.eclipse.appengine.libraries.defaultapis">
-             
-    <library 
-          id="master-container"
-          group="master"
-          name="Google APIs"
-          siteUri="https://googlecloudplatform.github.io/google-cloud-java/latest/" >
-    </library>         
+             id="com.google.cloud.tools.eclipse.appengine.libraries.defaultapis">       
              
     <library 
           id="appengine-api"

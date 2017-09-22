@@ -144,7 +144,7 @@ public abstract class CreateAppEngineWtpProject extends WorkspaceModifyOperation
         masterFiles.addAll(library.getLibraryFiles());
       }
 
-      Library masterLibrary = CloudLibraries.getMasterLibrary();
+      Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
       // new project so no existing files in master yet
       masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
       
