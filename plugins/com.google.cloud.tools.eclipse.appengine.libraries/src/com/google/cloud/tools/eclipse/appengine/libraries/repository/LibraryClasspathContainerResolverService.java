@@ -110,12 +110,19 @@ public class LibraryClasspathContainerResolverService
     Preconditions.checkArgument(containerPath.segment(0).equals(Library.CONTAINER_PATH_PREFIX));
     try {
       String libraryId = containerPath.segment(1);
-      Library library = CloudLibraries.getLibrary(libraryId);
+      Library library = null;
+      if (CloudLibraries.MASTER_CONTAINER_ID.equals(libraryId)) {
+        library = CloudLibraries.getMasterLibrary(javaProject);
+      } else {
+        library = CloudLibraries.getLibrary(libraryId);
+      }
       if (library != null) {
         List<Job> sourceAttacherJobs = new ArrayList<>();
         LibraryClasspathContainer container = resolveLibraryFiles(javaProject, containerPath,
                                                                   library, sourceAttacherJobs,
                                                                   monitor);
+        
+        // todo pass a real monitor/submonitor here
         JavaCore.setClasspathContainer(containerPath,
                                        new IJavaProject[] {javaProject},
                                        new IClasspathContainer[] {container},

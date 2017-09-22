@@ -18,16 +18,24 @@ package com.google.cloud.tools.eclipse.appengine.libraries.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.RegistryFactory;
+import org.eclipse.jdt.core.IJavaProject;
 
+import com.google.cloud.tools.eclipse.util.ArtifactRetriever;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 public class CloudLibraries {
+
+  public static final String MASTER_CONTAINER_ID = "master-container";
 
   /**
    * Library files for App Engine Standard environment applications; specifically
@@ -50,9 +58,8 @@ public class CloudLibraries {
   private static final Logger logger = Logger.getLogger(CloudLibraries.class.getName());
   private static final ImmutableMap<String, Library> libraries = loadLibraryDefinitions();
   
-  // todo consider caching maps of group to libraries
   /**
-   * @return libraries in the named group
+   * Returns libraries in the named group
    */
   public static List<Library> getLibraries(String group) {
     List<Library> result = new ArrayList<>();
@@ -65,32 +72,47 @@ public class CloudLibraries {
   }
   
   /**
-   * @return the library with the specified ID, or null if not found
+   * Returns the library with the specified ID, or null if not found
    */
   public static Library getLibrary(String id) {
     return libraries.get(id);
   }
 
+  private static final LoadingCache<IJavaProject, Library> masterLibraries =
+      CacheBuilder.newBuilder().build(new CacheLoader<IJavaProject, Library>() {
+
+        @Override
+        public Library load(IJavaProject project) {
+          Library library = new Library(MASTER_CONTAINER_ID);
+          library.setName("Google APIs");
+          return library;
+        }
+      });
+  
   /**
-   * @return the uber container for all Google APIs
+   * Returns the uber container for all Google APIs
    */
-  public static Library getMasterLibrary() {
-    return CloudLibraries.getLibrary("master-container"); // NON-NLS-1;
-  }  
+  public static Library getMasterLibrary(IJavaProject javaProject) {
+    try {
+      return masterLibraries.get(javaProject);
+    } catch (ExecutionException ex) {
+      return null;
+    }
+  }
   
   private static ImmutableMap<String, Library> loadLibraryDefinitions() {
     IConfigurationElement[] elements = RegistryFactory.getRegistry().getConfigurationElementsFor(
-        "com.google.cloud.tools.eclipse.appengine.libraries");
+        "com.google.cloud.tools.eclipse.appengine.libraries"); //$NON-NLS-1$
     ImmutableMap.Builder<String, Library> builder = ImmutableMap.builder();
     for (IConfigurationElement element : elements) {
       try {
         Library library = LibraryFactory.create(element);
         builder.put(library.getId(), library);
       } catch (LibraryFactoryException ex) {
-        logger.log(Level.SEVERE, "Error loading library definition", ex);
+        logger.log(Level.SEVERE, "Error loading library definition", ex); //$NON-NLS-1$
       }
     }
-
+    
     ImmutableMap<String, Library> map = builder.build();
     
     resolveTransitiveDependencies(map);

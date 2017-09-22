@@ -87,6 +87,7 @@ public class BuildPath {
     return newEntries.toArray(new IClasspathEntry[0]);
   }
 
+  // todo this can return IClasspathEntry, not a List<IClasspathEntry>
   private static List<IClasspathEntry> computeEntries(IJavaProject javaProject, Library library)
       throws CoreException {
     List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
@@ -107,7 +108,6 @@ public class BuildPath {
     runContainerResolverJob(javaProject);
     return newEntries.toArray(new IClasspathEntry[0]);
   }
-
 
   private static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
     IClasspathAttribute[] classpathAttributes = new IClasspathAttribute[1];
