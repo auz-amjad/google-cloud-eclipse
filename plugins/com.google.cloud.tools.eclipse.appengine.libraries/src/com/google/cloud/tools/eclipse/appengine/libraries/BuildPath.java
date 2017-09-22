@@ -40,7 +40,6 @@ import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.j2ee.classpathdep.UpdateClasspathAttributeUtil;
 import org.osgi.framework.FrameworkUtil;
 import org.xml.sax.SAXException;
@@ -79,7 +78,7 @@ public class BuildPath {
         Messages.getString("adding.app.engine.libraries"), //$NON-NLS-1$
         2);
     
-    List<IClasspathEntry> newEntries = readEntries(javaProject, library);
+    List<IClasspathEntry> newEntries = computeEntries(javaProject, library);
     subMonitor.worked(1);
     
     ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
@@ -88,8 +87,8 @@ public class BuildPath {
     return newEntries.toArray(new IClasspathEntry[0]);
   }
 
-  private static List<IClasspathEntry> readEntries(IJavaProject javaProject, Library library)
-      throws JavaModelException, CoreException {
+  private static List<IClasspathEntry> computeEntries(IJavaProject javaProject, Library library)
+      throws CoreException {
     List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
     List<IClasspathEntry> newEntries = new ArrayList<>();
     IClasspathEntry libraryContainer = makeClasspathEntry(library);
@@ -104,7 +103,7 @@ public class BuildPath {
    */
   public static IClasspathEntry[] listNativeLibrary(IJavaProject javaProject, Library library)
       throws CoreException {
-    List<IClasspathEntry> newEntries = readEntries(javaProject, library);
+    List<IClasspathEntry> newEntries = computeEntries(javaProject, library);
     runContainerResolverJob(javaProject);
     return newEntries.toArray(new IClasspathEntry[0]);
   }
