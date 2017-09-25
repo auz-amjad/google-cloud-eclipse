@@ -55,9 +55,9 @@ public class LibraryClasspathContainer implements IClasspathContainer {
    *
    * @param classpathEntries the classpath entries of the new container
    */
-  // todo add libraryFiles argument
   public LibraryClasspathContainer copyWithNewEntries(List<IClasspathEntry> classpathEntries) {
-    return new LibraryClasspathContainer(containerPath, description, classpathEntries, null);
+    return new LibraryClasspathContainer(containerPath, description, classpathEntries,
+        libraryFiles);
   }
 
   @Override
