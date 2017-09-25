@@ -190,18 +190,17 @@ public class LibraryClasspathContainerResolverService
   }
 
   private IClasspathEntry resolveLibraryFileAttachSourceAsync(IJavaProject javaProject,
-                                                              IPath containerPath,
-                                                              LibraryFile libraryFile,
-                                                              List<Job> sourceAttacherJobs,
-                                                              IProgressMonitor monitor)
-                                                                  throws CoreException {
+      IPath containerPath, LibraryFile libraryFile, List<Job> sourceAttacherJobs,
+      IProgressMonitor monitor) 
+          throws CoreException {
+    
     Artifact artifact = repositoryService.resolveArtifact(libraryFile, monitor);
-    IPath libraryPath = new Path(artifact.getFile().getAbsolutePath());
+    IPath artifactPath = new Path(artifact.getFile().getAbsolutePath());
     Job job = createSourceAttacherJob(javaProject, containerPath, libraryFile,
-                                      monitor, artifact, libraryPath);
+                                      monitor, artifact, artifactPath);
     sourceAttacherJobs.add(job);
     IClasspathEntry newLibraryEntry =
-        JavaCore.newLibraryEntry(libraryPath,
+        JavaCore.newLibraryEntry(artifactPath,
                                  null /* sourceAttachmentPath */,
                                  null /* sourceAttachmentRootPath */,
                                  getAccessRules(libraryFile.getFilters()),

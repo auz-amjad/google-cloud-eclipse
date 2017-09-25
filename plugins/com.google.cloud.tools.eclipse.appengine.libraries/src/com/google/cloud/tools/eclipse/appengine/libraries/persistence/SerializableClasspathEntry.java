@@ -27,7 +27,7 @@ import org.eclipse.jdt.core.JavaCore;
 /**
  * Represents a {@link IClasspathEntry} in such a way that it can be easily transformed into JSON.
  */
-public class SerializableClasspathEntry {
+class SerializableClasspathEntry {
 
   private static final String BINARY_REPO_RELATIVE_PREFIX = "BIN";
   private static final String SOURCE_REPO_RELATIVE_PREFIX = "SRC";
@@ -37,7 +37,7 @@ public class SerializableClasspathEntry {
   private String path;
   private SerializableAttribute[] attributes;
 
-  public SerializableClasspathEntry(IClasspathEntry entry, IPath baseDirectory,
+  SerializableClasspathEntry(IClasspathEntry entry, IPath baseDirectory,
       IPath sourceBaseDirectory) {
     setAttributes(entry.getExtraAttributes());
     setAccessRules(entry.getAccessRules());
@@ -86,7 +86,7 @@ public class SerializableClasspathEntry {
     }
   }
 
-  public void setAccessRules(IAccessRule[] accessRules) {
+  void setAccessRules(IAccessRule[] accessRules) {
     this.accessRules = new SerializableAccessRules[accessRules.length];
     for (int i = 0; i < accessRules.length; i++) {
       IAccessRule rule = accessRules[i];
@@ -94,7 +94,7 @@ public class SerializableClasspathEntry {
     }
   }
 
-  public void setSourcePath(IPath sourceAttachmentPath) {
+  void setSourcePath(IPath sourceAttachmentPath) {
     if (sourceAttachmentPath == null) {
       this.sourceAttachmentPath = "";
     } else {
@@ -102,7 +102,7 @@ public class SerializableClasspathEntry {
     }
   }
 
-  public IClasspathEntry toClasspathEntry(IPath baseDirectory, IPath sourceBaseDirectory) {
+  IClasspathEntry toClasspathEntry(IPath baseDirectory, IPath sourceBaseDirectory) {
     IPath attachmentPath = sourceAttachmentPath.isEmpty() ? null
         : restoreSourcePath(baseDirectory, sourceBaseDirectory);
     return JavaCore.newLibraryEntry(PathUtil.makePathAbsolute(new Path(path), baseDirectory),

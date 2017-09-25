@@ -22,9 +22,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.RegistryFactory;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaModelException;
 
 import com.google.cloud.tools.eclipse.util.ArtifactRetriever;
 import com.google.common.cache.CacheBuilder;
@@ -82,15 +86,49 @@ public class CloudLibraries {
       CacheBuilder.newBuilder().build(new CacheLoader<IJavaProject, Library>() {
 
         @Override
-        public Library load(IJavaProject project) {
+        public Library load(IJavaProject project) throws JavaModelException {
           Library library = new Library(MASTER_CONTAINER_ID);
           library.setName("Google APIs");
+          
+          IClasspathEntry[] entries = project.getRawClasspath();
+          for (IClasspathEntry entry : entries) {
+            if (library.getContainerPath().equals(entry.getPath())) {
+              logger.log(Level.WARNING, "found matching classpath entry");
+              // this is a container; need to resolve the container into library
+              // IClasspathEntries and the paths of the library entries are
+              // paths to the jars
+              
+              switch (entry.getEntryKind()) {
+                case IClasspathEntry.CPE_CONTAINER:
+                  logger.log(Level.WARNING, "kind: container");
+                  break;
+                case IClasspathEntry.CPE_LIBRARY:
+                  logger.log(Level.WARNING, "kind: library");
+                  break;
+                default:
+                  logger.log(Level.WARNING, "kind: surprise");
+                  break;
+              }
+              logger.log(Level.WARNING, "kind: " + entry.getSourceAttachmentPath());
+            }
+
+          }   
+          
+          IClasspathEntry[] resolvedEntries = project.getResolvedClasspath(true);
+          for (IClasspathEntry entry : entries) {
+            logger.log(Level.WARNING, entry.getPath() + " is referenced by");
+            IClasspathEntry ref = entry.getReferencingEntry();
+            if (ref != null) {
+              logger.log(Level.WARNING, ref.getPath() + ".");
+            }
+          }
+          
           return library;
         }
       });
   
   /**
-   * Returns the uber container for all Google APIs
+   * Returns the uber container for all Google APIs.
    */
   public static Library getMasterLibrary(IJavaProject javaProject) {
     try {

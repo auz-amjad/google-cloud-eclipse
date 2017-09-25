@@ -27,13 +27,13 @@ import org.eclipse.jdt.core.IClasspathEntry;
  * Represents a {@link LibraryClasspathContainer} in such a way that it can be easily transformed
  * into JSON.
  */
-public class SerializableLibraryClasspathContainer {
+class SerializableLibraryClasspathContainer {
 
   private final String description;
   private final String path;
   private final List<SerializableClasspathEntry> entries = new ArrayList<>();
 
-  public SerializableLibraryClasspathContainer(LibraryClasspathContainer container,
+  SerializableLibraryClasspathContainer(LibraryClasspathContainer container,
       IPath baseDirectory, IPath sourceBaseDirectory) {
     description = container.getDescription();
     path = container.getPath().toString();
@@ -43,7 +43,7 @@ public class SerializableLibraryClasspathContainer {
     }
   }
 
-  public LibraryClasspathContainer toLibraryClasspathContainer(IPath baseDirectory,
+  LibraryClasspathContainer toLibraryClasspathContainer(IPath baseDirectory,
       IPath sourceBaseDirectory) {
     List<IClasspathEntry> classpathEntries = new ArrayList<>();
     for (SerializableClasspathEntry entry : entries) {
