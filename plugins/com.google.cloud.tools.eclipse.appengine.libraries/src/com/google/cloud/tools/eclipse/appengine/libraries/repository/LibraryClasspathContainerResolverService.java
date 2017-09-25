@@ -118,9 +118,8 @@ public class LibraryClasspathContainerResolverService
       }
       if (library != null) {
         List<Job> sourceAttacherJobs = new ArrayList<>();
-        LibraryClasspathContainer container = resolveLibraryFiles(javaProject, containerPath,
-                                                                  library, sourceAttacherJobs,
-                                                                  monitor);
+        LibraryClasspathContainer container =
+            resolveLibraryFiles(javaProject, containerPath, library, sourceAttacherJobs, monitor);
         
         // todo pass a real monitor/submonitor here
         JavaCore.setClasspathContainer(containerPath,
