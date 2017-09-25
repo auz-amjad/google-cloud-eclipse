@@ -40,8 +40,6 @@ public class LibraryClasspathContainer implements IClasspathContainer {
     Preconditions.checkNotNull(classpathEntries, "classpathEntries is null");
     Preconditions.checkNotNull(libraryFiles, "libraryFiles is null");
     Preconditions.checkArgument(classpathEntries.size() == libraryFiles.size());
-    // todo there appears to be a 1:1 relationship between library files
-    // and classpath entries here. Should we use this?
 
     this.containerPath = path;
     this.description = description;
