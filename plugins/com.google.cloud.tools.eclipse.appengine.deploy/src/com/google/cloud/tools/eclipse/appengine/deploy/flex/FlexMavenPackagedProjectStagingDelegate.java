@@ -19,6 +19,7 @@ package com.google.cloud.tools.eclipse.appengine.deploy.flex;
 import com.google.cloud.tools.eclipse.appengine.deploy.StagingDelegate;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -28,6 +29,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -60,8 +62,11 @@ import org.eclipse.m2e.core.project.IMavenProjectRegistry;
  */
 public class FlexMavenPackagedProjectStagingDelegate extends FlexStagingDelegate {
 
-  public FlexMavenPackagedProjectStagingDelegate(IPath appEngineDirectory) {
+  private final IProject project;
+
+  public FlexMavenPackagedProjectStagingDelegate(IProject project, IPath appEngineDirectory) {
     super(appEngineDirectory);
+    this.project = Preconditions.checkNotNull(project);
   }
 
   @VisibleForTesting
@@ -140,8 +145,8 @@ public class FlexMavenPackagedProjectStagingDelegate extends FlexStagingDelegate
   }
 
   @Override
-  protected IPath getDeployArtifact(IProject project, IPath safeWorkingDirectory,
-      IProgressMonitor monitor) throws CoreException {
+  protected IPath getDeployArtifact(IPath safeWorkingDirectory, IProgressMonitor monitor)
+      throws CoreException {
     SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
 
     try {
@@ -154,6 +159,11 @@ public class FlexMavenPackagedProjectStagingDelegate extends FlexStagingDelegate
     } catch (InterruptedException ex) {
       throw new OperationCanceledException();
     }
+  }
+
+  @Override
+  public ISchedulingRule getSchedulingRule() {
+    return project;
   }
 
 }
