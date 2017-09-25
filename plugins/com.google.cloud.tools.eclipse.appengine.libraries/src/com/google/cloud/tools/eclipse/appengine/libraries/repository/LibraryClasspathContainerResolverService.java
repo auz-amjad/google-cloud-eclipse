@@ -118,6 +118,7 @@ public class LibraryClasspathContainerResolverService
       }
       if (library != null) {
         List<Job> sourceAttacherJobs = new ArrayList<>();
+        
         LibraryClasspathContainer container =
             resolveLibraryFiles(javaProject, containerPath, library, sourceAttacherJobs, monitor);
         
@@ -182,8 +183,8 @@ public class LibraryClasspathContainerResolverService
       child.worked(1);
     }
     monitor.done();
-    LibraryClasspathContainer container =
-        new LibraryClasspathContainer(containerPath, getLibraryDescription(library), entries);
+    LibraryClasspathContainer container = new LibraryClasspathContainer(
+        containerPath, getLibraryDescription(library), entries, libraryFiles);
     
     return container;
   }

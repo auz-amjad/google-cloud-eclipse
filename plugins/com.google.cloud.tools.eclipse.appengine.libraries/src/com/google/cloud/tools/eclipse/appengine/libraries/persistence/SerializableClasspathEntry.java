@@ -25,7 +25,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 
 /**
- * Represents a {@link IClasspathEntry} in such a way that it can be easily transformed into JSON.
+ * Represents an {@link IClasspathEntry} in such a way that it can be easily transformed into JSON.
  */
 class SerializableClasspathEntry {
 
@@ -43,7 +43,7 @@ class SerializableClasspathEntry {
     setAccessRules(entry.getAccessRules());
     setSourcePath(
         relativizeSourcePath(entry.getSourceAttachmentPath(), baseDirectory, sourceBaseDirectory));
-    setPath(PathUtil.relativizePath(entry.getPath(), baseDirectory).toString());
+    this.path = PathUtil.relativizePath(entry.getPath(), baseDirectory).toString();
   }
 
   /**
@@ -72,10 +72,6 @@ class SerializableClasspathEntry {
       return new Path(BINARY_REPO_RELATIVE_PREFIX)
           .append(PathUtil.relativizePath(sourceAttachmentPath, baseDirectory));
     }
-  }
-
-  private void setPath(String path) {
-    this.path = path;
   }
 
   public void setAttributes(IClasspathAttribute[] extraAttributes) {

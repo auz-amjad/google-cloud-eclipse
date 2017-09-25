@@ -112,15 +112,6 @@ public class CloudLibraries {
               logger.log(Level.WARNING, "kind: " + entry.getSourceAttachmentPath());
             }
 
-          }   
-          
-          IClasspathEntry[] resolvedEntries = project.getResolvedClasspath(true);
-          for (IClasspathEntry entry : entries) {
-            logger.log(Level.WARNING, entry.getPath() + " is referenced by");
-            IClasspathEntry ref = entry.getReferencingEntry();
-            if (ref != null) {
-              logger.log(Level.WARNING, ref.getPath() + ".");
-            }
           }
           
           return library;

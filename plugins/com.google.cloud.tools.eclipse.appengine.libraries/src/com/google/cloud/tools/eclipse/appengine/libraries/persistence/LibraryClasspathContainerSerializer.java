@@ -102,6 +102,7 @@ public class LibraryClasspathContainerSerializer {
         return null;
       }
       return fromJson.toLibraryClasspathContainer(
+          javaProject,
           binaryArtifactBaseLocationProvider.getBaseLocation(),
           sourceBaseLocationProvider.getBaseLocation());
     }

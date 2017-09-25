@@ -17,11 +17,16 @@
 package com.google.cloud.tools.eclipse.appengine.libraries.persistence;
 
 import com.google.cloud.tools.eclipse.appengine.libraries.LibraryClasspathContainer;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 
 /**
  * Represents a {@link LibraryClasspathContainer} in such a way that it can be easily transformed
@@ -32,6 +37,7 @@ class SerializableLibraryClasspathContainer {
   private final String description;
   private final String path;
   private final List<SerializableClasspathEntry> entries = new ArrayList<>();
+  private final List<LibraryFile> libraryFiles;
 
   SerializableLibraryClasspathContainer(LibraryClasspathContainer container,
       IPath baseDirectory, IPath sourceBaseDirectory) {
@@ -41,14 +47,19 @@ class SerializableLibraryClasspathContainer {
     for (IClasspathEntry entry : container.getClasspathEntries()) {
       entries.add(new SerializableClasspathEntry(entry, baseDirectory, sourceBaseDirectory));
     }
+    libraryFiles = new ArrayList<>(container.getLibraryFiles());
   }
 
-  LibraryClasspathContainer toLibraryClasspathContainer(IPath baseDirectory,
+  LibraryClasspathContainer toLibraryClasspathContainer(IJavaProject javaProject, IPath baseDirectory,
       IPath sourceBaseDirectory) {
     List<IClasspathEntry> classpathEntries = new ArrayList<>();
+        
+    Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
+    masterLibrary.setLibraryFiles(libraryFiles);
     for (SerializableClasspathEntry entry : entries) {
       classpathEntries.add(entry.toClasspathEntry(baseDirectory, sourceBaseDirectory));
     }
-    return new LibraryClasspathContainer(new Path(path), description, classpathEntries);
+    return new LibraryClasspathContainer(new Path(path), description, classpathEntries,
+        libraryFiles);
   }
 }
