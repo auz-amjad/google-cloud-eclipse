@@ -112,7 +112,6 @@ public class BuildPath {
     return masterLibrary;
   }
 
-  // todo this can return IClasspathEntry, not a List<IClasspathEntry>
   private static List<IClasspathEntry> computeEntries(IJavaProject javaProject, Library library)
       throws CoreException {
     List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
