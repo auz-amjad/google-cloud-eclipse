@@ -84,7 +84,7 @@ public class CloudLibraries {
         @Override
         public Library load(IJavaProject project) throws JavaModelException {
           Library library = new Library(MASTER_CONTAINER_ID);
-          library.setName("Google APIs");
+          library.setName("Google APIs"); //$NON-NLS-1$
           return library;
         }
       });
