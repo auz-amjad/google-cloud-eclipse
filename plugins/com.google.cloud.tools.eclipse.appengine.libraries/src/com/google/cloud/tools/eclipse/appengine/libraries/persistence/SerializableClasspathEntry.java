@@ -74,7 +74,7 @@ class SerializableClasspathEntry {
     }
   }
 
-  public void setAttributes(IClasspathAttribute[] extraAttributes) {
+  private void setAttributes(IClasspathAttribute[] extraAttributes) {
     attributes = new SerializableAttribute[extraAttributes.length];
     for (int i = 0; i < extraAttributes.length; i++) {
       IClasspathAttribute attribute = extraAttributes[i];
@@ -82,7 +82,7 @@ class SerializableClasspathEntry {
     }
   }
 
-  void setAccessRules(IAccessRule[] accessRules) {
+  private void setAccessRules(IAccessRule[] accessRules) {
     this.accessRules = new SerializableAccessRules[accessRules.length];
     for (int i = 0; i < accessRules.length; i++) {
       IAccessRule rule = accessRules[i];
@@ -90,7 +90,7 @@ class SerializableClasspathEntry {
     }
   }
 
-  void setSourcePath(IPath sourceAttachmentPath) {
+  private void setSourcePath(IPath sourceAttachmentPath) {
     if (sourceAttachmentPath == null) {
       this.sourceAttachmentPath = "";
     } else {

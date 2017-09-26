@@ -59,7 +59,7 @@ public class CloudLibraries {
   private static final ImmutableMap<String, Library> libraries = loadLibraryDefinitions();
   
   /**
-   * Returns libraries in the named group
+   * Returns libraries in the named group.
    */
   public static List<Library> getLibraries(String group) {
     List<Library> result = new ArrayList<>();
@@ -72,7 +72,7 @@ public class CloudLibraries {
   }
   
   /**
-   * Returns the library with the specified ID, or null if not found
+   * Returns the library with the specified ID, or null if not found.
    */
   public static Library getLibrary(String id) {
     return libraries.get(id);
