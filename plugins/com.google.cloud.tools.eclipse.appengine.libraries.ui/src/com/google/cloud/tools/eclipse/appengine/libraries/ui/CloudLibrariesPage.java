@@ -18,8 +18,6 @@ package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,9 +36,7 @@ import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
 import com.google.cloud.tools.eclipse.appengine.libraries.BuildPath;
-import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
-import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
 import com.google.cloud.tools.eclipse.util.MavenUtils;
 
@@ -112,20 +108,8 @@ public abstract class CloudLibrariesPage extends WizardPage implements IClasspat
         BuildPath.addMavenLibraries(project.getProject(), libraries, new NullProgressMonitor());
         return new IClasspathEntry[0];
       } else {
-        SortedSet<LibraryFile> masterFiles = new TreeSet<>();
-        for (Library library : libraries) {
-          if (!library.isResolved()) {
-            library.resolveDependencies();
-          }
-          masterFiles.addAll(library.getLibraryFiles());
-        }
-
-        Library masterLibrary = CloudLibraries.getMasterLibrary(project);
-        masterFiles.addAll(masterLibrary.getLibraryFiles());
-        masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
-        
+        Library masterLibrary = BuildPath.collectLibraryFiles(project, libraries);
         IClasspathEntry[] added = BuildPath.listNativeLibrary(project, masterLibrary);
-        
         return added;
       }
     } catch (CoreException ex) {

@@ -82,7 +82,22 @@ public class BuildPath {
         Messages.getString("adding.app.engine.libraries"), //$NON-NLS-1$
         2);
     
-    // todo duplicates some code in CloudLibrariesPage
+    Library masterLibrary = collectLibraryFiles(javaProject, libraries);
+    
+    List<IClasspathEntry> newEntries = computeEntries(javaProject, masterLibrary);
+    subMonitor.worked(1);
+    
+    ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
+    runContainerResolverJob(javaProject);
+    
+    return newEntries.toArray(new IClasspathEntry[0]);
+  }
+
+  /**
+   * Adds all jars and dependencies from <code>libaries</code> to the master library and returns it.
+   */
+  public static Library collectLibraryFiles(IJavaProject javaProject, List<Library> libraries)
+      throws CoreException {
     SortedSet<LibraryFile> masterFiles = new TreeSet<>();
     for (Library library : libraries) {
       if (!library.isResolved()) {
@@ -92,16 +107,9 @@ public class BuildPath {
     }
 
     Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
-    masterFiles.addAll(masterLibrary.getLibraryFiles()); // usually empty
+    masterFiles.addAll(masterLibrary.getLibraryFiles());
     masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
-    
-    List<IClasspathEntry> newEntries = computeEntries(javaProject, masterLibrary);
-    subMonitor.worked(1);
-    
-    ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
-    runContainerResolverJob(javaProject);
-    
-    return newEntries.toArray(new IClasspathEntry[0]);
+    return masterLibrary;
   }
 
   // todo this can return IClasspathEntry, not a List<IClasspathEntry>
