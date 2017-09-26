@@ -44,6 +44,8 @@ public class LibraryClasspathContainerTest {
 
   @Before
   public void setUp() {
+    libraryFiles.add(mock(LibraryFile.class));
+    
     classpathContainer = new LibraryClasspathContainer(
         new Path("container/path"), "description", mockClasspathEntry, libraryFiles);
   }
