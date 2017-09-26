@@ -58,7 +58,10 @@ public class BuildPathTest {
   @Test
   public void testAddNativeLibrary() throws CoreException {
     Library library = new Library("libraryId");
-    IClasspathEntry[] result = BuildPath.addNativeLibrary(project, library, monitor);
+    List<Library> libraries = new ArrayList<>();
+    libraries.add(library);
+
+    IClasspathEntry[] result = BuildPath.addNativeLibrary(project, libraries, monitor);
     Assert.assertEquals(1, result.length);
     Assert.assertEquals(initialClasspathSize + 1, project.getRawClasspath().length);
   }
@@ -72,29 +75,16 @@ public class BuildPathTest {
   }
 
   @Test
-  public void testAddLibraries_noDuplicates() throws CoreException {
+  public void testAddLibraries() throws CoreException {
     Library library = new Library("libraryId");
-    IClasspathEntry[] setup = BuildPath.addNativeLibrary(project, library, monitor);
+    List<Library> libraries = new ArrayList<>();
+    libraries.add(library);
+    IClasspathEntry[] setup = BuildPath.addNativeLibrary(project, libraries, monitor);
     Assert.assertEquals(1, setup.length);
 
-    IClasspathEntry[] result = BuildPath.addNativeLibrary(project, library, monitor);
+    IClasspathEntry[] result = BuildPath.addNativeLibrary(project, libraries, monitor);
     Assert.assertEquals(0, result.length);
     Assert.assertEquals(initialClasspathSize + 1, project.getRawClasspath().length);
-  }
-
-  @Test
-  public void testAddLibraries_withDuplicates() throws CoreException {
-    Library library1 = new Library("library1");
-    IClasspathEntry[] setup = BuildPath.addNativeLibrary(project, library1, monitor);
-    Assert.assertEquals(1, setup.length);
-
-    Library library2 = new Library("library2");
-    IClasspathEntry[] result = BuildPath.addNativeLibrary(project, library2, monitor);
-
-    Assert.assertEquals(1, result.length);
-    Assert.assertTrue(result[0].getPath().toString()
-        .endsWith("com.google.cloud.tools.eclipse.appengine.libraries/library2"));
-    Assert.assertEquals(initialClasspathSize + 2, project.getRawClasspath().length);
   }
 
 }

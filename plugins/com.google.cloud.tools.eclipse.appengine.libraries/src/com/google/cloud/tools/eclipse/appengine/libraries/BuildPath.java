@@ -16,13 +16,18 @@
 
 package com.google.cloud.tools.eclipse.appengine.libraries;
 
+import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
 import com.google.cloud.tools.eclipse.util.ClasspathUtil;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -68,17 +73,29 @@ public class BuildPath {
   }
 
   /**
-   * Returns the entries added to the classpath. Does not include entries previously present in
-   *     classpath.
+   * Returns the entries added to the classpath.
    */
-  public static IClasspathEntry[] addNativeLibrary(IJavaProject javaProject, Library library,
-      IProgressMonitor monitor) throws CoreException {
+  public static IClasspathEntry[] addNativeLibrary(IJavaProject javaProject,
+      List<Library> libraries, IProgressMonitor monitor) throws CoreException {
     
     SubMonitor subMonitor = SubMonitor.convert(monitor,
         Messages.getString("adding.app.engine.libraries"), //$NON-NLS-1$
         2);
     
-    List<IClasspathEntry> newEntries = computeEntries(javaProject, library);
+    // todo duplicates some code in CloudLibrariesPage
+    SortedSet<LibraryFile> masterFiles = new TreeSet<>();
+    for (Library library : libraries) {
+      if (!library.isResolved()) {
+        library.resolveDependencies();
+      }
+      masterFiles.addAll(library.getLibraryFiles());
+    }
+
+    Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
+    masterFiles.addAll(masterLibrary.getLibraryFiles()); // usually empty
+    masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
+    
+    List<IClasspathEntry> newEntries = computeEntries(javaProject, masterLibrary);
     subMonitor.worked(1);
     
     ClasspathUtil.addClasspathEntries(javaProject.getProject(), newEntries, subMonitor);
