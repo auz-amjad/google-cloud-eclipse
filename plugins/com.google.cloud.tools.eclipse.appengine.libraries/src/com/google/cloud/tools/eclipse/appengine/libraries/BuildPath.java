@@ -94,7 +94,9 @@ public class BuildPath {
   }
 
   /**
-   * Adds all jars and dependencies from <code>libaries</code> to the master library and returns it.
+   * Adds all jars and dependencies from <code>libraries</code> to the master library.
+   * 
+   * @return the master library
    */
   public static Library collectLibraryFiles(IJavaProject javaProject, List<Library> libraries)
       throws CoreException {
@@ -124,7 +126,7 @@ public class BuildPath {
   }
   
   /**
-   * Returns the entries added to the classpath. Does not add them to the classpath.
+   * Returns the entries to be added to the classpath. Does not add them to the classpath.
    */
   public static IClasspathEntry[] listNativeLibrary(IJavaProject javaProject, Library library)
       throws CoreException {
