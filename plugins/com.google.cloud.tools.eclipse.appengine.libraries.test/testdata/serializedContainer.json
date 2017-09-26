@@ -24,16 +24,16 @@
     }
   ],
 "libraryFiles": [
-		{
-			"filters": [],
-			"mavenCoordinates": {
-				"repository": "central",
-				"groupId": "com.google",
-				"artifactId": "jarartifact",
-				"version": "LATEST",
-				"type": "jar"
-			},
-			"export": true
-		}
-	]
+    {
+      "filters": [],
+      "mavenCoordinates": {
+        "repository": "central",
+        "groupId": "com.google",
+        "artifactId": "jarartifact",
+        "version": "LATEST",
+        "type": "jar"
+      },
+      "export": true
+    }
+  ]
 }
