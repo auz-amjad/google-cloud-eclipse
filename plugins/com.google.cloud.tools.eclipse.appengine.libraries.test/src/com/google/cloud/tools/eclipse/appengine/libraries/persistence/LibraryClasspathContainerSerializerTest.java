@@ -169,14 +169,14 @@ public class LibraryClasspathContainerSerializerTest {
     assertNull(serializer.loadContainer(javaProject, new Path(CONTAINER_PATH)));
   }
 
-  private void compare(LibraryClasspathContainer container,
-      LibraryClasspathContainer otherContainer) {
-    assertEquals(container.getPath(), otherContainer.getPath());
-    assertEquals(container.getKind(), otherContainer.getKind());
-    assertEquals(container.getDescription(), otherContainer.getDescription());
-    for (int i = 0; i < container.getClasspathEntries().length; i++) {
-      IClasspathEntry classpathEntry = container.getClasspathEntries()[i];
-      IClasspathEntry otherClasspathEntry = otherContainer.getClasspathEntries()[i];
+  private static void compare(LibraryClasspathContainer expected,
+      LibraryClasspathContainer actual) {
+    assertEquals(expected.getPath(), actual.getPath());
+    assertEquals(expected.getKind(), actual.getKind());
+    assertEquals(expected.getDescription(), actual.getDescription());
+    for (int i = 0; i < expected.getClasspathEntries().length; i++) {
+      IClasspathEntry classpathEntry = expected.getClasspathEntries()[i];
+      IClasspathEntry otherClasspathEntry = actual.getClasspathEntries()[i];
       assertEquals(classpathEntry.getPath(), otherClasspathEntry.getPath());
       assertEquals(classpathEntry.getEntryKind(), otherClasspathEntry.getEntryKind());
       assertEquals(classpathEntry.getSourceAttachmentPath(),
@@ -196,10 +196,10 @@ public class LibraryClasspathContainerSerializerTest {
       }
     }
     
-    List<LibraryFile> libraryFiles = container.getLibraryFiles();
+    List<LibraryFile> libraryFiles = actual.getLibraryFiles();
     if (libraryFiles.size() != 0) {
       for (int i = 0; i < libraryFiles.size(); i++) {
-        assertEquals(libraryFiles.get(i), otherContainer.getLibraryFiles().get(i));
+        assertEquals(libraryFiles.get(i), actual.getLibraryFiles().get(i));
       }
     }
   }
