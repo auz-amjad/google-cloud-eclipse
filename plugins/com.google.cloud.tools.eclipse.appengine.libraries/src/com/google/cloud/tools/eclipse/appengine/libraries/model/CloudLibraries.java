@@ -16,16 +16,14 @@
 
 package com.google.cloud.tools.eclipse.appengine.libraries.model;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.RegistryFactory;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 public class CloudLibraries {
 
@@ -34,22 +32,16 @@ public class CloudLibraries {
    * Objectify, App Engine API, and Google Cloud Endpoints.
    */
   public static final String APP_ENGINE_GROUP = "appengine";   //$NON-NLS-1$
-  
+
   /**
    * Library files for Google Client APIs for Java; specifically
    * google-api-client, oAuth, and google-http-client.
    */
   public static final String CLIENT_APIS_GROUP = "clientapis"; //$NON-NLS-1$
-  
-  /**
-   * Library files for all Java servlet applications; specifically
-   * servlet.jar and jsp-api.jar.
-   */
-  public static final String SERVLET_GROUP = "servlet"; //$NON-NLS-1$
-  
+
   private static final Logger logger = Logger.getLogger(CloudLibraries.class.getName());
   private static final ImmutableMap<String, Library> libraries = loadLibraryDefinitions();
-  
+
   // todo consider caching maps of group to libraries
   /**
    * @return libraries in the named group
@@ -63,17 +55,17 @@ public class CloudLibraries {
     }
     return result;
   }
-  
+
   /**
    * @return the library with the specified ID, or null if not found
    */
   public static Library getLibrary(String id) {
     // todo this method is only called by LibraryClasspathContainerResolverService and tests.
-    // Perhaps here or in LibraryClasspathContainerResolverService is where we should 
+    // Perhaps here or in LibraryClasspathContainerResolverService is where we should
     // resolve the transitive dependencies
     return libraries.get(id);
   }
-  
+
   private static ImmutableMap<String, Library> loadLibraryDefinitions() {
     IConfigurationElement[] elements = RegistryFactory.getRegistry().getConfigurationElementsFor(
         "com.google.cloud.tools.eclipse.appengine.libraries");
@@ -88,9 +80,9 @@ public class CloudLibraries {
     }
 
     ImmutableMap<String, Library> map = builder.build();
-    
+
     resolveTransitiveDependencies(map);
-    
+
     return map;
   }
 
@@ -109,6 +101,6 @@ public class CloudLibraries {
         }
       }
       library.setLibraryDependencies(transitiveDependencies);
-    }    
+    }
   }
 }
