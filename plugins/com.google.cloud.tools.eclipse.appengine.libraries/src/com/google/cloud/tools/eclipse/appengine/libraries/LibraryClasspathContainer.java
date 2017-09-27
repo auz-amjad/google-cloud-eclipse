@@ -39,7 +39,7 @@ public class LibraryClasspathContainer implements IClasspathContainer {
     Preconditions.checkArgument(!description.isEmpty(), "description is empty");
     Preconditions.checkNotNull(classpathEntries, "classpathEntries is null");
     Preconditions.checkNotNull(libraryFiles, "libraryFiles is null");
-    Preconditions.checkArgument(classpathEntries.size() == libraryFiles.size());
+    // Preconditions.checkArgument(classpathEntries.size() == libraryFiles.size());
 
     this.containerPath = path;
     this.description = description;

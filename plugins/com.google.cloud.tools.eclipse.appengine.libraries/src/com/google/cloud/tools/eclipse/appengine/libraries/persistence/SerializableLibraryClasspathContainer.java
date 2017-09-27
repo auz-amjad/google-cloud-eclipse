@@ -63,11 +63,11 @@ class SerializableLibraryClasspathContainer {
     Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
     if (libraryFiles == null) { // we deserialized an old version
       libraryFiles = new ArrayList<>(entries.size());
-      for (SerializableClasspathEntry entry : entries) {
+     /* for (SerializableClasspathEntry entry : entries) {
         MavenCoordinates coordinates = new MavenCoordinates("foo", "bar");
         LibraryFile file = new LibraryFile(coordinates);
         libraryFiles.add(file);
-      }
+      } */
     }
     masterLibrary.setLibraryFiles(libraryFiles);
 
