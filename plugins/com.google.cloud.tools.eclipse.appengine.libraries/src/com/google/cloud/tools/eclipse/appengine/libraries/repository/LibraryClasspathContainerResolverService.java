@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.libraries.repository;
 
+import com.google.cloud.tools.eclipse.appengine.libraries.BuildPath;
 import com.google.cloud.tools.eclipse.appengine.libraries.ILibraryClasspathContainerResolverService;
 import com.google.cloud.tools.eclipse.appengine.libraries.LibraryClasspathContainer;
 import com.google.cloud.tools.eclipse.appengine.libraries.Messages;
@@ -115,7 +116,12 @@ public class LibraryClasspathContainerResolverService
       String libraryId = containerPath.segment(1);
       Library library = null;
       if (CloudLibraries.MASTER_CONTAINER_ID.equals(libraryId)) {
-        library = CloudLibraries.getMasterLibrary(javaProject);
+        List<String> referencedIds = serializer.loadLibraryIds(javaProject, containerPath);
+        List<Library> referencedLibraries = new ArrayList<>();
+        for (String referencedId : referencedIds) {
+          referencedLibraries.add(CloudLibraries.getLibrary(referencedId));
+        }
+        library = BuildPath.collectLibraryFiles(javaProject, referencedLibraries);
       } else {
         library = CloudLibraries.getLibrary(libraryId);
       }

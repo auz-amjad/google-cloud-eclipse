@@ -18,13 +18,11 @@ package com.google.cloud.tools.eclipse.appengine.libraries.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -77,7 +75,7 @@ public final class Library {
     return name;
   }
 
-  void setName(String name) {
+  public void setName(String name) {
     this.name = name;
   }
   
@@ -140,7 +138,7 @@ public final class Library {
    * @param libraryDependencies list of library IDs that are dependencies of this library
    *     and should be added to the classpath, cannot be <code>null</code>
    */
-   void setLibraryDependencies(List<String> libraryDependencies) {
+  public void setLibraryDependencies(List<String> libraryDependencies) {
     Preconditions.checkNotNull(libraryDependencies);
     this.libraryDependencies = new ArrayList<>(libraryDependencies);
   }

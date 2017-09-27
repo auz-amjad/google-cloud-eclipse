@@ -16,22 +16,14 @@
 
 package com.google.cloud.tools.eclipse.appengine.libraries.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.RegistryFactory;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaModelException;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.RegistryFactory;
 
 public class CloudLibraries {
 
@@ -76,28 +68,6 @@ public class CloudLibraries {
    */
   public static Library getLibrary(String id) {
     return libraries.get(id);
-  }
-
-  private static final LoadingCache<IJavaProject, Library> masterLibraries =
-      CacheBuilder.newBuilder().build(new CacheLoader<IJavaProject, Library>() {
-
-        @Override
-        public Library load(IJavaProject project) throws JavaModelException {
-          Library library = new Library(MASTER_CONTAINER_ID);
-          library.setName("Google APIs"); //$NON-NLS-1$
-          return library;
-        }
-      });
-  
-  /**
-   * Returns the uber container for all Google APIs.
-   */
-  public static Library getMasterLibrary(IJavaProject javaProject) {
-    try {
-      return masterLibraries.get(javaProject);
-    } catch (ExecutionException ex) {
-      return null;
-    }
   }
   
   private static ImmutableMap<String, Library> loadLibraryDefinitions() {
