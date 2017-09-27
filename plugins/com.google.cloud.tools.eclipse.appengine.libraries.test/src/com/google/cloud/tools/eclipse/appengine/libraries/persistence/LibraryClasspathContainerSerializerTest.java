@@ -196,8 +196,11 @@ public class LibraryClasspathContainerSerializerTest {
       }
     }
     
-    for (int i = 0; i < container.getLibraryFiles().size(); i++) {
-      assertEquals(container.getLibraryFiles().get(i), otherContainer.getLibraryFiles().get(i));
+    List<LibraryFile> libraryFiles = container.getLibraryFiles();
+    if (libraryFiles.size() != 0) {
+      for (int i = 0; i < libraryFiles.size(); i++) {
+        assertEquals(libraryFiles.get(i), otherContainer.getLibraryFiles().get(i));
+      }
     }
   }
 
