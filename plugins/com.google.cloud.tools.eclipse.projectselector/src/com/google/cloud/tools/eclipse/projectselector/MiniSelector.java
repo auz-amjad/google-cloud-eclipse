@@ -22,6 +22,7 @@ import com.google.cloud.tools.eclipse.projectselector.model.GcpProject;
 import com.google.cloud.tools.eclipse.ui.util.DisplayExecutor;
 import com.google.cloud.tools.eclipse.util.jobs.Consumer;
 import com.google.cloud.tools.eclipse.util.jobs.FuturisticJob;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.List;
@@ -54,7 +55,6 @@ public class MiniSelector implements ISelectionProvider {
   private final ProjectRepository projectRepository;
 
   private Executor displayExecutor;
-  private ProjectRepository projectsRepository;
   private ComboViewer comboViewer;
   private Credential credential;
   private FetchProjectsJob fetchProjectsJob;
@@ -66,9 +66,10 @@ public class MiniSelector implements ISelectionProvider {
     this(container, apiFactory, null);
   }
 
-  public MiniSelector(Composite container, IGoogleApiFactory apiFactory, Credential credential) {
+  @VisibleForTesting
+  MiniSelector(Composite container, IGoogleApiFactory apiFactory, Credential credential) {
     this.credential = credential;
-    this.projectRepository = new ProjectRepository(apiFactory);
+    projectRepository = new ProjectRepository(apiFactory);
     create(container);
   }
 
@@ -218,7 +219,7 @@ public class MiniSelector implements ISelectionProvider {
 
     public FetchProjectsJob() {
       super("Determining accessible projects");
-      this.credential = MiniSelector.this.credential;
+      credential = MiniSelector.this.credential;
     }
 
     @Override
@@ -230,7 +231,7 @@ public class MiniSelector implements ISelectionProvider {
     @Override
     protected boolean isStale() {
       // check if the MiniSelector's credential has changed
-      return this.credential != MiniSelector.this.credential;
+      return credential != MiniSelector.this.credential;
     }
   }
 }
