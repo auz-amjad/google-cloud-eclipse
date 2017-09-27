@@ -70,10 +70,7 @@ public class LibraryClasspathContainerSerializerTest {
 
   @Before
   public void setUp() throws IOException {
-    
-    java.nio.file.Path jsonPath = Paths.get("testdata/serializedContainer.json").toAbsolutePath();
-    byte[] jsonData = Files.readAllBytes(jsonPath);
-    serializedContainer = new String(jsonData, Charsets.UTF_8);
+    serializedContainer = loadFile("testdata/serializedContainer.json");
     
     List<IClasspathEntry> classpathEntries = Arrays.asList(
         newClasspathEntry(IClasspathEntry.CPE_LIBRARY, "/test/path/to/jar",
@@ -89,6 +86,12 @@ public class LibraryClasspathContainerSerializerTest {
     libraryFiles.add(libraryFile);
     container = new LibraryClasspathContainer(new Path(CONTAINER_PATH), CONTAINER_DESCRIPTION,
         classpathEntries, libraryFiles);
+  }
+
+  private String loadFile(String path) throws IOException {
+    java.nio.file.Path jsonPath = Paths.get(path).toAbsolutePath();
+    byte[] jsonData = Files.readAllBytes(jsonPath);
+    return new String(jsonData, Charsets.UTF_8);
   }
 
   @Test
@@ -119,6 +122,25 @@ public class LibraryClasspathContainerSerializerTest {
     compare(container, containerFromFile);
   }
 
+  // The legacy format
+  @Test
+  public void testLoadContainer_withoutLibraries() throws IOException, CoreException {
+    Path stateFilePath = new Path(stateFolder.newFile().getAbsolutePath());
+    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), any(IPath.class),
+        anyBoolean())).thenReturn(stateFilePath);
+    String legacyContainer = loadFile("testdata/legacyContainer.json");
+    Files.write(stateFilePath.toFile().toPath(),
+        legacyContainer.getBytes(StandardCharsets.UTF_8),
+        StandardOpenOption.TRUNCATE_EXISTING);
+    LibraryClasspathContainerSerializer serializer = new LibraryClasspathContainerSerializer(
+        stateLocationProvider, binaryBaseLocationProvider, sourceBaseLocationProvider);
+    
+    LibraryClasspathContainer containerFromFile =
+        serializer.loadContainer(javaProject, new Path(CONTAINER_PATH));
+    compare(container, containerFromFile);
+  }
+  
+  
   @Test
   public void testSaveContainer() throws CoreException, IOException {
     Path stateFilePath = new Path(stateFolder.newFile().getAbsolutePath());
@@ -172,6 +194,10 @@ public class LibraryClasspathContainerSerializerTest {
         assertEquals(classpathAttribute.getName(), otherClasspathAttribute.getName());
         assertEquals(classpathAttribute.getValue(), otherClasspathAttribute.getValue());
       }
+    }
+    
+    for (int i = 0; i < container.getLibraryFiles().size(); i++) {
+      assertEquals(container.getLibraryFiles().get(i), otherContainer.getLibraryFiles().get(i));
     }
   }
 

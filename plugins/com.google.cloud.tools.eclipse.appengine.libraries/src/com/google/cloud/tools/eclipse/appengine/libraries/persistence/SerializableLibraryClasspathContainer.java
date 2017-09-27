@@ -20,6 +20,7 @@ import com.google.cloud.tools.eclipse.appengine.libraries.LibraryClasspathContai
 import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
+import com.google.cloud.tools.eclipse.appengine.libraries.model.MavenCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ class SerializableLibraryClasspathContainer {
   private final String description;
   private final String path;
   private final List<SerializableClasspathEntry> entries = new ArrayList<>();
-  private final List<LibraryFile> libraryFiles;
+  private List<LibraryFile> libraryFiles;
 
   SerializableLibraryClasspathContainer(LibraryClasspathContainer container,
       IPath baseDirectory, IPath sourceBaseDirectory) {
@@ -47,19 +48,31 @@ class SerializableLibraryClasspathContainer {
     for (IClasspathEntry entry : container.getClasspathEntries()) {
       entries.add(new SerializableClasspathEntry(entry, baseDirectory, sourceBaseDirectory));
     }
+    
     libraryFiles = new ArrayList<>(container.getLibraryFiles());
   }
 
   LibraryClasspathContainer toLibraryClasspathContainer(IJavaProject javaProject, IPath baseDirectory,
       IPath sourceBaseDirectory) {
     List<IClasspathEntry> classpathEntries = new ArrayList<>();
-        
-    Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
-    masterLibrary.setLibraryFiles(libraryFiles);
+
     for (SerializableClasspathEntry entry : entries) {
       classpathEntries.add(entry.toClasspathEntry(baseDirectory, sourceBaseDirectory));
     }
+    
+    Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
+    if (libraryFiles == null) { // we deserialized an old version
+      libraryFiles = new ArrayList<>(entries.size());
+      for (SerializableClasspathEntry entry : entries) {
+        MavenCoordinates coordinates = new MavenCoordinates("foo", "bar");
+        LibraryFile file = new LibraryFile(coordinates);
+        libraryFiles.add(file);
+      }
+    }
+    masterLibrary.setLibraryFiles(libraryFiles);
+
     return new LibraryClasspathContainer(new Path(path), description, classpathEntries,
         libraryFiles);
   }
+
 }
