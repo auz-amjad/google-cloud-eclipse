@@ -20,7 +20,6 @@ import com.google.cloud.tools.eclipse.appengine.libraries.LibraryClasspathContai
 import com.google.cloud.tools.eclipse.appengine.libraries.model.CloudLibraries;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.LibraryFile;
-import com.google.cloud.tools.eclipse.appengine.libraries.model.MavenCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,12 +61,7 @@ class SerializableLibraryClasspathContainer {
     
     Library masterLibrary = CloudLibraries.getMasterLibrary(javaProject);
     if (libraryFiles == null) { // we deserialized an old version
-      libraryFiles = new ArrayList<>(entries.size());
-     /* for (SerializableClasspathEntry entry : entries) {
-        MavenCoordinates coordinates = new MavenCoordinates("foo", "bar");
-        LibraryFile file = new LibraryFile(coordinates);
-        libraryFiles.add(file);
-      } */
+      libraryFiles = new ArrayList<>();
     }
     masterLibrary.setLibraryFiles(libraryFiles);
 
