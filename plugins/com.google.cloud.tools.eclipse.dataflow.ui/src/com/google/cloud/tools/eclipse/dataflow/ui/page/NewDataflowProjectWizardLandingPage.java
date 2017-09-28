@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
@@ -129,7 +130,8 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
     Composite formComposite = new Composite(parent, SWT.NULL);
     formComposite.setLayout(new GridLayout(3, false));
     setControl(formComposite);
-
+    setHelp(formComposite);
+    
     groupIdInput = addLabeledText(formComposite, Messages.getString("group.id")); //$NON-NLS-1$
     groupIdInput.setMessage(Messages.getString("example.group.id"));//$NON-NLS-1$
     groupIdInput.setToolTipText(Messages.getString("GROUP_ID_TOOLTIP")); //$NON-NLS-1$
@@ -183,6 +185,12 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
 
     formComposite.layout();
     parent.layout();
+  }
+  
+
+  private void setHelp(Composite container) {
+    PlatformUI.getWorkbench().getHelpSystem().setHelp(container,
+        "com.google.cloud.tools.eclipse.dataflow.ui.NewDataflowProjectContext"); //$NON-NLS-1$
   }
 
   private void validateAndSetError() {
