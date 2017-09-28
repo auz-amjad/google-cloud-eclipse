@@ -115,15 +115,18 @@ public class BuildPath {
   public static Library collectLibraryFiles(IJavaProject javaProject, List<Library> libraries)
       throws CoreException {
     SortedSet<LibraryFile> masterFiles = new TreeSet<>();
+    List<String> dependentIds = new ArrayList<>();
     for (Library library : libraries) {
       if (!library.isResolved()) {
         library.resolveDependencies();
       }
+      dependentIds.add(library.getId());
       masterFiles.addAll(library.getLibraryFiles());
     }
 
     Library masterLibrary = new Library(CloudLibraries.MASTER_CONTAINER_ID);
     masterLibrary.setName("Google APIs"); //$NON-NLS-1$
+    masterLibrary.setLibraryDependencies(dependentIds);
     masterFiles.addAll(masterLibrary.getLibraryFiles());
     masterLibrary.setLibraryFiles(new ArrayList<LibraryFile>(masterFiles));
     return masterLibrary;
@@ -134,6 +137,15 @@ public class BuildPath {
     List<IClasspathEntry> rawClasspath = Lists.newArrayList(javaProject.getRawClasspath());
     List<IClasspathEntry> newEntries = new ArrayList<>();
     IClasspathEntry libraryContainer = makeClasspathEntry(library);
+    if (CloudLibraries.MASTER_CONTAINER_ID.equals(library.getId())) {
+      try {
+        LibraryClasspathContainerSerializer serializer = new LibraryClasspathContainerSerializer();
+        serializer.saveLibraryIds(javaProject, library.getLibraryDependencies());
+      } catch (IOException ex) {
+        throw new CoreException(
+            StatusUtil.error(BuildPath.class, "Error saving master library list", ex));
+      }
+    }
     if (!rawClasspath.contains(libraryContainer)) {
       newEntries.add(libraryContainer);
     }

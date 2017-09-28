@@ -51,6 +51,9 @@ import org.osgi.framework.FrameworkUtil;
 @Creatable
 public class LibraryClasspathContainerSerializer {
 
+  // FIXME: getContainerStateFile() ignores first segment and requires second segment
+  private static final Path LIBRARY_LIST_PATH = new Path("libraries/master-libraries");
+
   private static final Logger logger =
       Logger.getLogger(LibraryClasspathContainerSerializer.class.getName());
 
@@ -116,7 +119,7 @@ public class LibraryClasspathContainerSerializer {
 
   public void saveLibraryIds(IJavaProject javaProject, List<String> libraryIds)
       throws CoreException, IOException {
-    File stateFile = getContainerStateFile(javaProject, new Path("master-libraries"), true);
+    File stateFile = getContainerStateFile(javaProject, LIBRARY_LIST_PATH, true);
     if (stateFile == null) {
       logger.warning("Master libraries file cannot be created, save failed");
       return;
@@ -128,7 +131,7 @@ public class LibraryClasspathContainerSerializer {
 
   public List<String> loadLibraryIds(IJavaProject javaProject, IPath containerPath)
       throws IOException, CoreException {
-    File stateFile = getContainerStateFile(javaProject, new Path("master-libraries"), false);
+    File stateFile = getContainerStateFile(javaProject, LIBRARY_LIST_PATH, false);
     if (stateFile == null) {
       logger.warning("No library-id state file found: " + stateFile);
       return null;
