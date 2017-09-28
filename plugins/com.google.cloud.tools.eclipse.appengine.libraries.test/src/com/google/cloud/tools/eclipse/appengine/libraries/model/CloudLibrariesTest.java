@@ -17,8 +17,11 @@
 package com.google.cloud.tools.eclipse.appengine.libraries.model;
 
 import java.util.List;
+
+import org.eclipse.jdt.core.IJavaProject;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class CloudLibrariesTest {
 

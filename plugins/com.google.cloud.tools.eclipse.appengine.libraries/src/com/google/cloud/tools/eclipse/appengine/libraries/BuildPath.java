@@ -85,7 +85,7 @@ public class BuildPath {
     Library masterLibrary = collectLibraryFiles(javaProject, libraries);
     List<IClasspathEntry> newEntries = computeEntries(javaProject, masterLibrary);
     subMonitor.worked(1);
-    
+
     List<String> libraryIds = new ArrayList<>();
     for (Library library : libraries) {
       libraryIds.add(library.getId());
@@ -158,6 +158,7 @@ public class BuildPath {
     } else {
       classpathAttributes[0] = UpdateClasspathAttributeUtil.createNonDependencyAttribute();
     }
+
     return JavaCore.newContainerEntry(library.getContainerPath(), new IAccessRule[0],
         classpathAttributes, false);
   }
