@@ -36,6 +36,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -60,6 +61,8 @@ import org.osgi.service.component.annotations.Reference;
 @Component
 public class LibraryClasspathContainerResolverService
     implements ILibraryClasspathContainerResolverService {
+  private static final Logger logger =
+      Logger.getLogger(LibraryClasspathContainerResolverService.class.getName());
 
   private static final String CLASSPATH_ATTRIBUTE_SOURCE_URL =
       "com.google.cloud.tools.eclipse.appengine.libraries.sourceUrl"; //$NON-NLS-1$
@@ -119,7 +122,12 @@ public class LibraryClasspathContainerResolverService
         List<String> referencedIds = serializer.loadLibraryIds(javaProject, containerPath);
         List<Library> referencedLibraries = new ArrayList<>();
         for (String referencedId : referencedIds) {
-          referencedLibraries.add(CloudLibraries.getLibrary(referencedId));
+          Library referencedLibrary = CloudLibraries.getLibrary(referencedId);
+          if (referencedLibrary != null) {
+            referencedLibraries.add(referencedLibrary);
+          } else {
+            logger.severe("Referenced library not found: " + referencedId);
+          }
         }
         library = BuildPath.collectLibraryFiles(javaProject, referencedLibraries);
       } else {

@@ -18,7 +18,6 @@ package com.google.cloud.tools.eclipse.appengine.newproject.standard;
 
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
@@ -101,7 +100,6 @@ public class CreateAppEngineStandardWtpProjectTest extends CreateAppEngineWtpPro
     assertThat(Arrays.asList(javaProject.getRawClasspath()),
         Matchers.hasItem(masterLibraryEntryMatcher));
     assertThat(Arrays.asList(javaProject.getResolvedClasspath(true)), Matchers.hasItem(appEngineSdkMatcher));
-    fail("API classpath container was not added to the build path");
   }
 
   @Test

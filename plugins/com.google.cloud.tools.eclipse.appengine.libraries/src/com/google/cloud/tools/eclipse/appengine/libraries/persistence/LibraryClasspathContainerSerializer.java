@@ -130,6 +130,7 @@ public class LibraryClasspathContainerSerializer {
       throws IOException, CoreException {
     File stateFile = getContainerStateFile(javaProject, new Path("master-libraries"), false);
     if (stateFile == null) {
+      logger.warning("No library-id state file found: " + stateFile);
       return null;
     }
     try (Reader reader = Files.newBufferedReader(stateFile.toPath(), StandardCharsets.UTF_8)) {
