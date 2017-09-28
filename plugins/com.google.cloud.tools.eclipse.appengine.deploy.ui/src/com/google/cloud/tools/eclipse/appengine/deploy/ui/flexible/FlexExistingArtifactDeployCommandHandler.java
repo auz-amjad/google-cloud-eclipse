@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.deploy.ui.flexible;
 
+import com.google.cloud.tools.eclipse.appengine.deploy.DeployPreferences;
 import com.google.cloud.tools.eclipse.appengine.deploy.StagingDelegate;
 import com.google.cloud.tools.eclipse.appengine.deploy.flex.FlexExistingArtifactDeployPreferences;
 import com.google.cloud.tools.eclipse.appengine.deploy.flex.FlexExistingDeployArtifactStagingDelegate;
@@ -25,6 +26,8 @@ import com.google.cloud.tools.eclipse.appengine.deploy.ui.Messages;
 import com.google.cloud.tools.eclipse.googleapis.IGoogleApiFactory;
 import com.google.cloud.tools.eclipse.login.IGoogleLoginService;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -63,4 +66,14 @@ public class FlexExistingArtifactDeployCommandHandler extends DeployCommandHandl
     return file;
   }
 
+  @Override
+  protected DeployPreferences getDeployPreferences(IProject project) {
+    return new FlexExistingArtifactDeployPreferences();
+  }
+
+  @Override
+  protected IProject getSelectedProject(ExecutionEvent event)
+      throws ExecutionException, CoreException {
+    return null;
+  }
 }
