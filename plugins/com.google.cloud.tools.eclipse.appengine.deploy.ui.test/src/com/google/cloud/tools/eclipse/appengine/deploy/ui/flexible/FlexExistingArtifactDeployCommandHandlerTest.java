@@ -83,7 +83,7 @@ public class FlexExistingArtifactDeployCommandHandlerTest {
   }
 
   @Test
-  public void testGetStagingDelegate_absoluateAppYamlPathDoesNotExist()
+  public void testGetStagingDelegate_absoluteAppYamlPathDoesNotExist()
       throws BackingStoreException {
     try {
       setUpDeployPreferences(false /* asRelativePath */);
@@ -95,7 +95,7 @@ public class FlexExistingArtifactDeployCommandHandlerTest {
   }
 
   @Test
-  public void testGetStagingDelegate_absoluateJarPathDoesNotExist() throws BackingStoreException {
+  public void testGetStagingDelegate_absoluteJarPathDoesNotExist() throws BackingStoreException {
     try {
       setUpDeployPreferences(false /* asRelativePath */);
       createFileInProject("app.yaml");
