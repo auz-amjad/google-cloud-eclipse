@@ -21,6 +21,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +30,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -46,6 +50,9 @@ import org.osgi.framework.FrameworkUtil;
  */
 @Creatable
 public class LibraryClasspathContainerSerializer {
+
+  // FIXME: getContainerStateFile() ignores first segment and requires second segment
+  private static final Path LIBRARY_LIST_PATH = new Path("libraries/master-libraries");
 
   private static final Logger logger =
       Logger.getLogger(LibraryClasspathContainerSerializer.class.getName());
@@ -109,6 +116,39 @@ public class LibraryClasspathContainerSerializer {
       return libraryClasspathContainer;
     }
   }
+
+  public void saveLibraryIds(IJavaProject javaProject, List<String> libraryIds)
+      throws CoreException, IOException {
+    File stateFile = getContainerStateFile(javaProject, LIBRARY_LIST_PATH, true);
+    if (stateFile == null) {
+      logger.warning("Master libraries file cannot be created, save failed");
+      return;
+    }
+    try (Writer out = Files.newBufferedWriter(stateFile.toPath(), StandardCharsets.UTF_8)) {
+      out.write(gson.toJson(libraryIds.toArray()));
+    }
+  }
+
+  public List<String> loadLibraryIds(IJavaProject javaProject, IPath containerPath)
+      throws IOException, CoreException {
+    File stateFile = getContainerStateFile(javaProject, LIBRARY_LIST_PATH, false);
+    if (stateFile == null) {
+      logger.warning("No library-id state file found: " + stateFile);
+      return null;
+    }
+    try (Reader reader = Files.newBufferedReader(stateFile.toPath(), StandardCharsets.UTF_8)) {
+      JsonArray array = gson.fromJson(reader, JsonArray.class);
+      if (array == null) {
+        return null;
+      }
+      List<String> libraryIds = new ArrayList<>(array.size());
+      for (JsonElement element : array) {
+        libraryIds.add(element.getAsString());
+      }
+      return libraryIds;
+    }
+  }
+
 
   private File getContainerStateFile(IJavaProject javaProject, IPath containerPath, boolean create)
       throws CoreException {
