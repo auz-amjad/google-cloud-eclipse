@@ -75,7 +75,6 @@ public class WarPublisher {
     SubMonitor progress = SubMonitor.convert(monitor, 100);
     progress.setTaskName(Messages.getString("task.name.publish.war"));
 
-    System.out.println("#### " + destination);
     PublishHelper publishHelper = new PublishHelper(null);
     IModuleResource[] resources = flattenResources(publishHelper, project, destination,
         safeWorkDirectory, progress);
@@ -116,6 +115,7 @@ public class WarPublisher {
         }
 
         IPath childPath = new Path(delegate.getPath(child));
+        String zipName = childPath.lastSegment();
         IPath zipParent = childPath.removeLastSegments(1);
 
         boolean alreadyZip = j2eeModule != null && j2eeModule.isBinary()
@@ -127,21 +127,15 @@ public class WarPublisher {
           File javaIoFile = zipResource.getAdapter(File.class);
           IFile iFile = zipResource.getAdapter(IFile.class);
 
-          System.out.println("zipResource: " + zipResource.getName());
           if (javaIoFile != null) {
-            System.out.println("zipResource: " + javaIoFile.getAbsolutePath());
-            resources.add(new ModuleFile(javaIoFile, zipResource.getName(), zipParent));
+            resources.add(new ModuleFile(javaIoFile, zipName, zipParent));
           } else if (iFile != null) {
-            System.out.println("path: " + iFile);
-            resources.add(new ModuleFile(iFile, zipResource.getName(), zipParent));
+            resources.add(new ModuleFile(iFile, zipName, zipParent));
           }
         } else {
-          System.out.println("tempZip: " + safeWorkDirectory);
-
-          publishHelper.publishZip(childDelegate.members(), safeWorkDirectory, monitor);
-          File zip = new File(safeWorkDirectory.toString());
-          resources.add(new ModuleFile(zip, childPath.lastSegment(), zipParent));
-          System.out.println("zip: " + zip + ", " + zip.exists());
+          IPath tempZip = safeWorkDirectory.append(zipName);
+          publishHelper.publishZip(childDelegate.members(), tempZip, monitor);
+          resources.add(new ModuleFile(tempZip.toFile(), childPath.lastSegment(), zipParent));
         }
       }
     }
