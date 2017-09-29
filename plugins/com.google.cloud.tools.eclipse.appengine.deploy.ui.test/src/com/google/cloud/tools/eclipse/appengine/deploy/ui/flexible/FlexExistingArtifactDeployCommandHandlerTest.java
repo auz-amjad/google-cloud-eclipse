@@ -28,7 +28,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
@@ -43,20 +42,6 @@ public class FlexExistingArtifactDeployCommandHandlerTest {
   private static final FlexExistingArtifactDeployPreferences preferences =
       new FlexExistingArtifactDeployPreferences();
 
-  @Before
-  public void setUp() throws BackingStoreException {
-    IPath workspace = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-    IPath appYaml = projectCreator.getProject().getFile("app.yaml").getLocation();
-    IPath jar = projectCreator.getProject().getFile("my-app.jar").getLocation();
-
-    IPath relativeAppYaml = appYaml.makeRelativeTo(workspace);
-    IPath relativeJar = jar.makeRelativeTo(workspace);
-
-    preferences.setAppYamlPath(relativeAppYaml.toString());
-    preferences.setDeployArtifactPath(relativeJar.toString());
-    preferences.save();
-  }
-
   @After
   public void tearDown() throws BackingStoreException {
     preferences.resetToDefaults();
@@ -64,8 +49,10 @@ public class FlexExistingArtifactDeployCommandHandlerTest {
   }
 
   @Test
-  public void testGetStagingDelegate_exceptionIfAppYamlDoesNotExist() {
+  public void testGetStagingDelegate_relativeAppYamlPathDoesNotExist()
+      throws BackingStoreException {
     try {
+      setUpDeployPreferences(true /* asRelativePath */);
       handler.getStagingDelegate(projectCreator.getProject());
       fail();
     } catch (CoreException e) {
@@ -74,8 +61,9 @@ public class FlexExistingArtifactDeployCommandHandlerTest {
   }
 
   @Test
-  public void testGetStagingDelegate_exceptionIfDeployArtifactDoesNotExist() {
+  public void testGetStagingDelegate_relativeJarPathDoesNotExist() throws BackingStoreException {
     try {
+      setUpDeployPreferences(true /* asRelativePath */);
       createFileInProject("app.yaml");
 
       handler.getStagingDelegate(projectCreator.getProject());
@@ -86,7 +74,43 @@ public class FlexExistingArtifactDeployCommandHandlerTest {
   }
 
   @Test
-  public void testGetStagingDelegate_noException() throws CoreException {
+  public void testGetStagingDelegate_relativePathsNoException()
+      throws CoreException, BackingStoreException {
+    setUpDeployPreferences(true /* asRelativePath */);
+    createFileInProject("app.yaml");
+    createFileInProject("my-app.jar");
+    handler.getStagingDelegate(projectCreator.getProject());
+  }
+
+  @Test
+  public void testGetStagingDelegate_absoluateAppYamlPathDoesNotExist()
+      throws BackingStoreException {
+    try {
+      setUpDeployPreferences(false /* asRelativePath */);
+      handler.getStagingDelegate(projectCreator.getProject());
+      fail();
+    } catch (CoreException e) {
+      assertThat(e.getMessage(), endsWith("app.yaml does not exist."));
+    }
+  }
+
+  @Test
+  public void testGetStagingDelegate_absoluateJarPathDoesNotExist() throws BackingStoreException {
+    try {
+      setUpDeployPreferences(false /* asRelativePath */);
+      createFileInProject("app.yaml");
+
+      handler.getStagingDelegate(projectCreator.getProject());
+      fail();
+    } catch (CoreException e) {
+      assertThat(e.getMessage(), endsWith("my-app.jar does not exist."));
+    }
+  }
+
+  @Test
+  public void testGetStagingDelegate_absolautePathsNoException()
+      throws CoreException, BackingStoreException {
+    setUpDeployPreferences(false /* asRelativePath */);
     createFileInProject("app.yaml");
     createFileInProject("my-app.jar");
     handler.getStagingDelegate(projectCreator.getProject());
@@ -96,5 +120,20 @@ public class FlexExistingArtifactDeployCommandHandlerTest {
     IFile file = projectCreator.getProject().getFile(filename);
     file.create(new ByteArrayInputStream(new byte[0]), true, null);
     return file.getLocation();
+  }
+
+  private void setUpDeployPreferences(boolean asRelativePath) throws BackingStoreException {
+    IPath workspace = ResourcesPlugin.getWorkspace().getRoot().getLocation();
+    IPath appYaml = projectCreator.getProject().getFile("app.yaml").getLocation();
+    IPath jar = projectCreator.getProject().getFile("my-app.jar").getLocation();
+
+    if (asRelativePath) {
+      appYaml = appYaml.makeRelativeTo(workspace);
+      jar = jar.makeRelativeTo(workspace);
+    }
+
+    preferences.setAppYamlPath(appYaml.toString());
+    preferences.setDeployArtifactPath(jar.toString());
+    preferences.save();
   }
 }

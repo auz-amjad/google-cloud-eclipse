@@ -57,14 +57,13 @@ public class FlexExistingArtifactDeployCommandHandler extends DeployCommandHandl
     return new FlexExistingDeployArtifactStagingDelegate(deployArtifact, appEngineDirectory);
   }
 
-  private IPath resolveFileAgainstWorkspace(String pathString) throws CoreException {
-    IPath path = new Path(pathString);
-    if (path.isAbsolute()) {
-      return path;
+  private IPath resolveFileAgainstWorkspace(String path) throws CoreException {
+    IPath fullPath = new Path(path);
+    if (!fullPath.isAbsolute()) {
+      IPath workspaceRoot = ResourcesPlugin.getWorkspace().getRoot().getLocation();
+      fullPath = workspaceRoot.append(path);
     }
 
-    IPath workspaceRoot = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-    IPath fullPath = workspaceRoot.append(pathString);
     if (!fullPath.toFile().exists()) {
       throw new CoreException(StatusUtil.error(this, fullPath + " does not exist."));
     }
