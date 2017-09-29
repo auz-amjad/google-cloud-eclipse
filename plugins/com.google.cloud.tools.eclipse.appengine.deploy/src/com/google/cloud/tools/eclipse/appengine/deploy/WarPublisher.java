@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.deploy;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.Files;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +32,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jst.server.core.IWebFragmentModule;
+import org.eclipse.jst.server.core.IJ2EEModule;
+import org.eclipse.jst.server.core.IUtilityModule;
 import org.eclipse.wst.server.core.IModule;
 import org.eclipse.wst.server.core.ServerUtil;
 import org.eclipse.wst.server.core.model.IModuleResource;
@@ -73,8 +75,9 @@ public class WarPublisher {
     SubMonitor progress = SubMonitor.convert(monitor, 100);
     progress.setTaskName(Messages.getString("task.name.publish.war"));
 
+    System.out.println("#### " + destination);
     PublishHelper publishHelper = new PublishHelper(null);
-    IModuleResource[] resources = flattenResources(project, progress);
+    IModuleResource[] resources = flattenResources(publishHelper, destination, project, progress);
 
     if (exploded) {
       publishHelper.publishFull(resources, destination, progress.newChild(100));
@@ -83,8 +86,8 @@ public class WarPublisher {
     }
   }
 
-  private static IModuleResource[] flattenResources(
-      IProject project, IProgressMonitor monitor) throws CoreException {
+  private static IModuleResource[] flattenResources(PublishHelper publishHelper,
+      IPath rootDestination, IProject project, IProgressMonitor monitor) throws CoreException {
     List<IModuleResource> resources = new ArrayList<>();
 
     IModule[] modules = ServerUtil.getModules(project);
@@ -101,27 +104,39 @@ public class WarPublisher {
       for (IModule child : delegate.getChildModules()) {
         ModuleDelegate childDelegate = (ModuleDelegate)
             child.loadAdapter(ModuleDelegate.class, monitor);
-        IWebFragmentModule webFragmentModule = (IWebFragmentModule)
-            child.loadAdapter(IWebFragmentModule.class, monitor);
-        if (childDelegate == null || webFragmentModule == null || !webFragmentModule.isBinary()) {
-          logger.log(Level.WARNING, "child modules other than binary web-fragments are not "
-              + "supported: module=" + module + ", moduleType=" + module.getModuleType());
+        IJ2EEModule j2eeModule = (IJ2EEModule) child.loadAdapter(IJ2EEModule.class, monitor);
+        IUtilityModule utilityModule =
+            (IUtilityModule) child.loadAdapter(IUtilityModule.class, monitor);
+        if (childDelegate == null || j2eeModule == null || utilityModule == null) {
+          logger.log(Level.WARNING, "child modules other than J2EE module or utility module are "
+              + "not supported: module=" + child + ", moduleType=" + child.getModuleType());
           continue;
         }
 
-        // per "isBinary()" Javadoc, "members()" should have a single resource.
-        IModuleResource zipResource = childDelegate.members()[0];
-        // destination (not an actual zip), e.g., "WEB-INF/lib/spring-web-4.3.6.RELEASE.jar"
-        IPath zip = new Path(delegate.getPath(child));
-        IPath zipParent = zip.removeLastSegments(1);
+        IPath childPath = new Path(delegate.getPath(child));
+        IPath zipParent = childPath.removeLastSegments(1);
 
-        File javaIoFile = zipResource.getAdapter(File.class);
-        IFile iFile = zipResource.getAdapter(IFile.class);
+        boolean alreadyZip = j2eeModule != null && j2eeModule.isBinary()
+            || utilityModule != null && utilityModule.isBinary();
+        if (alreadyZip) {
+          // per "isBinary()" Javadoc, "members()" should have a single resource.
+          IModuleResource zipResource = childDelegate.members()[0];
 
-        if (javaIoFile != null) {
-          resources.add(new ModuleFile(javaIoFile, zipResource.getName(), zipParent));
-        } else if (iFile != null) {
-          resources.add(new ModuleFile(iFile, zipResource.getName(), zipParent));
+          File javaIoFile = zipResource.getAdapter(File.class);
+          IFile iFile = zipResource.getAdapter(IFile.class);
+
+          if (javaIoFile != null) {
+            resources.add(new ModuleFile(javaIoFile, zipResource.getName(), zipParent));
+          } else if (iFile != null) {
+            resources.add(new ModuleFile(iFile, zipResource.getName(), zipParent));
+          }
+        } else {
+          IPath tempDirectory = new Path(Files.createTempDir().getAbsolutePath());
+          IPath tempZip = tempDirectory.append(childPath);
+
+          publishHelper.publishZip(childDelegate.members(), tempZip, monitor);
+          File zip = new File(tempZip.toString());
+          resources.add(new ModuleFile(zip, tempZip.lastSegment(), zipParent));
         }
       }
     }
