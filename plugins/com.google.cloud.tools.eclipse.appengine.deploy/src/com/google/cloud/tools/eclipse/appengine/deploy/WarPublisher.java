@@ -38,7 +38,7 @@ import org.eclipse.wst.server.core.ServerUtil;
 import org.eclipse.wst.server.core.model.IModuleResource;
 import org.eclipse.wst.server.core.model.ModuleDelegate;
 import org.eclipse.wst.server.core.util.ModuleFile;
-import org.eclipse.wst.server.core.util.PublishHelper;
+import org.eclipse.wst.server.core.util.PublishUtil;
 
 /**
  * Writes a WAR file of a project, or the exploded contents of it to a destination directory.
@@ -75,19 +75,16 @@ public class WarPublisher {
     SubMonitor progress = SubMonitor.convert(monitor, 100);
     progress.setTaskName(Messages.getString("task.name.publish.war"));
 
-    PublishHelper publishHelper = new PublishHelper(null);
-    IModuleResource[] resources = flattenResources(publishHelper, project, destination,
-        safeWorkDirectory, progress);
+    IModuleResource[] resources = flattenResources(project, safeWorkDirectory, progress);
 
     if (exploded) {
-      publishHelper.publishFull(resources, destination, progress.newChild(100));
+      PublishUtil.publishFull(resources, destination, progress.newChild(100));
     } else {
-      publishHelper.publishZip(resources, destination, progress.newChild(100));
+      PublishUtil.publishZip(resources, destination, progress.newChild(100));
     }
   }
 
-  private static IModuleResource[] flattenResources(PublishHelper publishHelper,
-      IProject project, IPath rootDestination, IPath safeWorkDirectory,
+  private static IModuleResource[] flattenResources(IProject project, IPath safeWorkDirectory,
       IProgressMonitor monitor) throws CoreException {
     List<IModuleResource> resources = new ArrayList<>();
 
@@ -114,9 +111,10 @@ public class WarPublisher {
           continue;
         }
 
-        IPath childPath = new Path(delegate.getPath(child));
-        String zipName = childPath.lastSegment();
-        IPath zipParent = childPath.removeLastSegments(1);
+        // destination (relative to root), e.g., "WEB-INF/lib/spring-web-4.3.6.RELEASE.jar"
+        IPath destination = new Path(delegate.getPath(child));
+        String zipName = destination.lastSegment();  // to be created
+        IPath zipParent = destination.removeLastSegments(1);
 
         boolean alreadyZip = j2eeModule != null && j2eeModule.isBinary()
             || utilityModule != null && utilityModule.isBinary();
@@ -134,8 +132,8 @@ public class WarPublisher {
           }
         } else {
           IPath tempZip = safeWorkDirectory.append(zipName);
-          publishHelper.publishZip(childDelegate.members(), tempZip, monitor);
-          resources.add(new ModuleFile(tempZip.toFile(), childPath.lastSegment(), zipParent));
+          PublishUtil.publishZip(childDelegate.members(), tempZip, monitor);
+          resources.add(new ModuleFile(tempZip.toFile(), destination.lastSegment(), zipParent));
         }
       }
     }
