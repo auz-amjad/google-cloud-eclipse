@@ -32,6 +32,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.widgets.Shell;
 
 public class FlexExistingArtifactDeployCommandHandler extends DeployCommandHandler {
@@ -56,9 +57,14 @@ public class FlexExistingArtifactDeployCommandHandler extends DeployCommandHandl
     return new FlexExistingDeployArtifactStagingDelegate(deployArtifact, appEngineDirectory);
   }
 
-  private IPath resolveFileAgainstWorkspace(String path) throws CoreException {
+  private IPath resolveFileAgainstWorkspace(String pathString) throws CoreException {
+    IPath path = new Path(pathString);
+    if (path.isAbsolute()) {
+      return path;
+    }
+
     IPath workspaceRoot = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-    IPath fullPath = workspaceRoot.append(path);
+    IPath fullPath = workspaceRoot.append(pathString);
     if (!fullPath.toFile().exists()) {
       throw new CoreException(StatusUtil.error(this, fullPath + " does not exist."));
     }
