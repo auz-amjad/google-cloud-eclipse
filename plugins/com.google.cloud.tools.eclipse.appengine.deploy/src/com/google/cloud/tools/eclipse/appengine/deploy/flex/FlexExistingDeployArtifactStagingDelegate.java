@@ -43,6 +43,7 @@ public class FlexExistingDeployArtifactStagingDelegate extends FlexStagingDelega
   public FlexExistingDeployArtifactStagingDelegate(IPath deployArtifact, IPath appEngineDirectory) {
     super(appEngineDirectory);
     Preconditions.checkNotNull(deployArtifact);
+    Preconditions.checkArgument(!deployArtifact.isEmpty());
     Preconditions.checkArgument(deployArtifact.isAbsolute());
     Preconditions.checkArgument(appEngineDirectory.isAbsolute());
     this.deployArtifact = deployArtifact;
