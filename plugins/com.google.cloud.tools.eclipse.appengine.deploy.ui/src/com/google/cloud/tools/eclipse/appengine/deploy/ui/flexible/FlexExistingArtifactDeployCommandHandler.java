@@ -28,12 +28,10 @@ import com.google.cloud.tools.eclipse.login.IGoogleLoginService;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.widgets.Shell;
 
 public class FlexExistingArtifactDeployCommandHandler extends DeployCommandHandler {
@@ -49,21 +47,22 @@ public class FlexExistingArtifactDeployCommandHandler extends DeployCommandHandl
   @Override
   protected StagingDelegate getStagingDelegate(IProject project) throws CoreException {
     String appYamlPath = new FlexExistingArtifactDeployPreferences().getAppYamlPath();
-    IFile appYaml = resolveFileAgainstWorkspace(appYamlPath);
-    IPath appEngineDirectory = appYaml.getParent().getLocation();
+    IPath appYaml = resolveFileAgainstWorkspace(appYamlPath);
+    IPath appEngineDirectory = appYaml.removeLastSegments(1);
 
     String deployArtifactPath = new FlexExistingArtifactDeployPreferences().getDeployArtifactPath();
-    IFile deployArtifact = resolveFileAgainstWorkspace(deployArtifactPath);
+    IPath deployArtifact = resolveFileAgainstWorkspace(deployArtifactPath);
 
     return new FlexExistingDeployArtifactStagingDelegate(deployArtifact, appEngineDirectory);
   }
 
-  private IFile resolveFileAgainstWorkspace(String path) throws CoreException {
-    IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path));
-    if (!file.exists()) {
-      throw new CoreException(StatusUtil.error(this, file + " does not exist."));
+  private IPath resolveFileAgainstWorkspace(String path) throws CoreException {
+    IPath workspaceRoot = ResourcesPlugin.getWorkspace().getRoot().getLocation();
+    IPath fullPath = workspaceRoot.append(path);
+    if (!fullPath.toFile().exists()) {
+      throw new CoreException(StatusUtil.error(this, fullPath + " does not exist."));
     }
-    return file;
+    return fullPath;
   }
 
   @Override
