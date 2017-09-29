@@ -17,7 +17,6 @@
 package com.google.cloud.tools.eclipse.appengine.deploy;
 
 import com.google.common.base.Preconditions;
-import com.google.common.io.Files;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,31 +52,33 @@ public class WarPublisher {
    * directory already contains resources those will be deleted if they are not part of the exploded
    * WAR.
    */
-  public static void publishExploded(IProject project, IPath destination, IProgressMonitor monitor)
-      throws CoreException {
-    publish(project, destination, true /* exploded */, monitor);
+  public static void publishExploded(IProject project, IPath destination,
+      IPath safeWorkDirectory, IProgressMonitor monitor) throws CoreException {
+    publish(project, destination, safeWorkDirectory, true /* exploded */, monitor);
   }
 
-  public static void publishWar(IProject project, IPath destination, IProgressMonitor monitor)
-      throws CoreException {
-    publish(project, destination, false /* exploded */, monitor);
-  }
-
-  private static void publish(IProject project, IPath destination, boolean exploded,
+  public static void publishWar(IProject project, IPath destination, IPath safeWorkDirectory,
       IProgressMonitor monitor) throws CoreException {
+    publish(project, destination, safeWorkDirectory, false /* exploded */, monitor);
+  }
+
+  private static void publish(IProject project, IPath destination, IPath safeWorkDirectory,
+      boolean exploded, IProgressMonitor monitor) throws CoreException {
     if (monitor.isCanceled()) {
       throw new OperationCanceledException();
     }
     Preconditions.checkNotNull(project, "project is null"); //$NON-NLS-1$
     Preconditions.checkNotNull(destination, "destination is null"); //$NON-NLS-1$
     Preconditions.checkArgument(!destination.isEmpty(), "destination is empty path"); //$NON-NLS-1$
+    Preconditions.checkNotNull(safeWorkDirectory, "safeWorkDirectory is null"); //$NON-NLS-1$
 
     SubMonitor progress = SubMonitor.convert(monitor, 100);
     progress.setTaskName(Messages.getString("task.name.publish.war"));
 
     System.out.println("#### " + destination);
     PublishHelper publishHelper = new PublishHelper(null);
-    IModuleResource[] resources = flattenResources(publishHelper, destination, project, progress);
+    IModuleResource[] resources = flattenResources(publishHelper, project, destination,
+        safeWorkDirectory, progress);
 
     if (exploded) {
       publishHelper.publishFull(resources, destination, progress.newChild(100));
@@ -87,7 +88,8 @@ public class WarPublisher {
   }
 
   private static IModuleResource[] flattenResources(PublishHelper publishHelper,
-      IPath rootDestination, IProject project, IProgressMonitor monitor) throws CoreException {
+      IProject project, IPath rootDestination, IPath safeWorkDirectory,
+      IProgressMonitor monitor) throws CoreException {
     List<IModuleResource> resources = new ArrayList<>();
 
     IModule[] modules = ServerUtil.getModules(project);
@@ -125,18 +127,21 @@ public class WarPublisher {
           File javaIoFile = zipResource.getAdapter(File.class);
           IFile iFile = zipResource.getAdapter(IFile.class);
 
+          System.out.println("zipResource: " + zipResource.getName());
           if (javaIoFile != null) {
+            System.out.println("zipResource: " + javaIoFile.getAbsolutePath());
             resources.add(new ModuleFile(javaIoFile, zipResource.getName(), zipParent));
           } else if (iFile != null) {
+            System.out.println("path: " + iFile);
             resources.add(new ModuleFile(iFile, zipResource.getName(), zipParent));
           }
         } else {
-          IPath tempDirectory = new Path(Files.createTempDir().getAbsolutePath());
-          IPath tempZip = tempDirectory.append(childPath);
+          System.out.println("tempZip: " + safeWorkDirectory);
 
-          publishHelper.publishZip(childDelegate.members(), tempZip, monitor);
-          File zip = new File(tempZip.toString());
-          resources.add(new ModuleFile(zip, tempZip.lastSegment(), zipParent));
+          publishHelper.publishZip(childDelegate.members(), safeWorkDirectory, monitor);
+          File zip = new File(safeWorkDirectory.toString());
+          resources.add(new ModuleFile(zip, childPath.lastSegment(), zipParent));
+          System.out.println("zip: " + zip + ", " + zip.exists());
         }
       }
     }

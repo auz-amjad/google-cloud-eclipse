@@ -30,6 +30,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
@@ -62,8 +63,9 @@ public class WebFragmentWarPublishTest {
   @Test
   public void testPublishExploded_webFragmentJarPublished() throws CoreException {
     IFolder exploded = project.getFolder("exploded-war");
+    IPath tempDirectory = project.getFolder("temp").getLocation();
     try {
-      WarPublisher.publishExploded(project, exploded.getLocation(), monitor);
+      WarPublisher.publishExploded(project, exploded.getLocation(), tempDirectory, monitor);
 
       exploded.refreshLocal(IResource.DEPTH_INFINITE, monitor);
       assertTrue(exploded.getFile("WEB-INF/lib/spring-web-4.3.8.RELEASE.jar").exists());
@@ -76,8 +78,9 @@ public class WebFragmentWarPublishTest {
   public void testPublishWar_webFragmentJarPublished() throws CoreException {
     IFile war = project.getFile("my-app.war");
     IFolder unzipped = project.getFolder("unzipped");
+    IPath tempDirectory = project.getFolder("temp").getLocation();
     try {
-      WarPublisher.publishWar(project, war.getLocation(), monitor);
+      WarPublisher.publishWar(project, war.getLocation(), tempDirectory, monitor);
 
       ZipUtil.unzip(war.getLocation().toFile(), unzipped.getLocation().toFile(), monitor);
       unzipped.refreshLocal(IResource.DEPTH_INFINITE, monitor);
