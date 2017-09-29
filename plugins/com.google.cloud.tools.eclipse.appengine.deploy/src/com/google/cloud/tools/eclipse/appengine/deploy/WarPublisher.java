@@ -105,7 +105,7 @@ public class WarPublisher {
         IJ2EEModule j2eeModule = (IJ2EEModule) child.loadAdapter(IJ2EEModule.class, monitor);
         IUtilityModule utilityModule =
             (IUtilityModule) child.loadAdapter(IUtilityModule.class, monitor);
-        if (childDelegate == null || j2eeModule == null || utilityModule == null) {
+        if (childDelegate == null || (j2eeModule == null && utilityModule == null)) {
           logger.log(Level.WARNING, "child modules other than J2EE module or utility module are "
               + "not supported: module=" + child + ", moduleType=" + child.getModuleType());
           continue;
