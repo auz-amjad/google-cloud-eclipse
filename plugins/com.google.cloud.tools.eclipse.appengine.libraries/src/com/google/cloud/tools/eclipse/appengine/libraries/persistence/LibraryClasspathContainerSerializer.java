@@ -50,12 +50,10 @@ import org.osgi.framework.FrameworkUtil;
  */
 @Creatable
 public class LibraryClasspathContainerSerializer {
-
-  // FIXME: getContainerStateFile() ignores first segment and requires second segment
-  private static final Path LIBRARY_LIST_PATH = new Path("libraries/master-libraries");
-
   private static final Logger logger =
       Logger.getLogger(LibraryClasspathContainerSerializer.class.getName());
+
+  private static final String MASTER_LIBRARY_LIST_FILE_ID = "master-libraries";
 
   private final LibraryContainerStateLocationProvider stateLocationProvider;
   private final ArtifactBaseLocationProvider binaryArtifactBaseLocationProvider;
@@ -81,7 +79,7 @@ public class LibraryClasspathContainerSerializer {
 
   public void saveContainer(IJavaProject javaProject, LibraryClasspathContainer container)
       throws IOException, CoreException {
-    File stateFile = getContainerStateFile(javaProject, container.getPath(), true);
+    File stateFile = getContainerStateFile(javaProject, container.getPath().lastSegment(), true);
     if (stateFile == null) {
       logger.warning("Container state file cannot be created, save failed");
       return;
@@ -97,7 +95,7 @@ public class LibraryClasspathContainerSerializer {
 
   public LibraryClasspathContainer loadContainer(IJavaProject javaProject, IPath containerPath)
       throws IOException, CoreException {
-    File stateFile = getContainerStateFile(javaProject, containerPath, false);
+    File stateFile = getContainerStateFile(javaProject, containerPath.lastSegment(), false);
     if (stateFile == null) {
       return null;
     }
@@ -119,7 +117,7 @@ public class LibraryClasspathContainerSerializer {
 
   public void saveLibraryIds(IJavaProject javaProject, List<String> libraryIds)
       throws CoreException, IOException {
-    File stateFile = getContainerStateFile(javaProject, LIBRARY_LIST_PATH, true);
+    File stateFile = getContainerStateFile(javaProject, MASTER_LIBRARY_LIST_FILE_ID, true);
     if (stateFile == null) {
       logger.warning("Master libraries file cannot be created, save failed");
       return;
@@ -131,7 +129,7 @@ public class LibraryClasspathContainerSerializer {
 
   public List<String> loadLibraryIds(IJavaProject javaProject, IPath containerPath)
       throws IOException, CoreException {
-    File stateFile = getContainerStateFile(javaProject, LIBRARY_LIST_PATH, false);
+    File stateFile = getContainerStateFile(javaProject, MASTER_LIBRARY_LIST_FILE_ID, false);
     if (stateFile == null) {
       logger.warning("No library-id state file found: " + stateFile);
       return null;
@@ -150,10 +148,10 @@ public class LibraryClasspathContainerSerializer {
   }
 
 
-  private File getContainerStateFile(IJavaProject javaProject, IPath containerPath, boolean create)
+  private File getContainerStateFile(IJavaProject javaProject, String fileId, boolean create)
       throws CoreException {
     IPath containerStateFile =
-        stateLocationProvider.getContainerStateFile(javaProject, containerPath, create);
+        stateLocationProvider.getContainerStateFile(javaProject, fileId, create);
     if (containerStateFile != null && containerStateFile.toFile().exists()) {
       return containerStateFile.toFile();
     }
@@ -168,7 +166,7 @@ public class LibraryClasspathContainerSerializer {
      * Therefore if <code>create</code> is false, they will not fail or throw and error.
      */
     @Override
-    public IPath getContainerStateFile(IJavaProject javaProject, IPath containerPath,
+    public IPath getContainerStateFile(IJavaProject javaProject, String id,
         boolean create) throws CoreException {
       IFolder settingsFolder = javaProject.getProject().getFolder(".settings");
       IFolder folder =
@@ -176,7 +174,7 @@ public class LibraryClasspathContainerSerializer {
       if (!folder.exists() && create) {
         folder.create(true, true, null);
       }
-      IFile containerFile = folder.getFile(containerPath.segment(1) + ".container");
+      IFile containerFile = folder.getFile(id + ".container");
       if (!containerFile.exists() && create) {
         containerFile.create(new ByteArrayInputStream(new byte[0]), true, null);
       }

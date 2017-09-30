@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.tools.eclipse.appengine.libraries.LibraryClasspathContainer;
@@ -97,7 +98,7 @@ public class LibraryClasspathContainerSerializerTest {
   @Test
   public void testSaveAndLoadContainer() throws CoreException, IOException {
     Path stateFilePath = new Path(stateFolder.newFile().getAbsolutePath());
-    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), any(IPath.class),
+    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), anyString(),
         anyBoolean())).thenReturn(stateFilePath);
     LibraryClasspathContainerSerializer serializer = new LibraryClasspathContainerSerializer(
         stateLocationProvider, binaryBaseLocationProvider, sourceBaseLocationProvider);
@@ -110,7 +111,7 @@ public class LibraryClasspathContainerSerializerTest {
   @Test
   public void testLoadContainer() throws IOException, CoreException {
     Path stateFilePath = new Path(stateFolder.newFile().getAbsolutePath());
-    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), any(IPath.class),
+    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), anyString(),
         anyBoolean())).thenReturn(stateFilePath);
     Files.write(stateFilePath.toFile().toPath(),
         serializedContainer.getBytes(StandardCharsets.UTF_8),
@@ -126,7 +127,7 @@ public class LibraryClasspathContainerSerializerTest {
   @Test
   public void testLoadContainer_withoutLibraries() throws IOException, CoreException {
     Path stateFilePath = new Path(stateFolder.newFile().getAbsolutePath());
-    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), any(IPath.class),
+    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), anyString(),
         anyBoolean())).thenReturn(stateFilePath);
     String legacyContainer = loadFile("testdata/legacyContainer.json");
     Files.write(stateFilePath.toFile().toPath(),
@@ -144,7 +145,7 @@ public class LibraryClasspathContainerSerializerTest {
   @Test
   public void testSaveContainer() throws CoreException, IOException {
     Path stateFilePath = new Path(stateFolder.newFile().getAbsolutePath());
-    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), any(IPath.class),
+    when(stateLocationProvider.getContainerStateFile(any(IJavaProject.class), anyString(),
         anyBoolean())).thenReturn(stateFilePath);
     LibraryClasspathContainerSerializer serializer = new LibraryClasspathContainerSerializer(
         stateLocationProvider, binaryBaseLocationProvider, sourceBaseLocationProvider);
