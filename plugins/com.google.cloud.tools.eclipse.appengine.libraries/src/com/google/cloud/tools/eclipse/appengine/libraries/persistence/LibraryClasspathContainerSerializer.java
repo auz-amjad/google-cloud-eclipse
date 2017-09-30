@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.eclipse.core.resources.IFile;
@@ -132,12 +133,12 @@ public class LibraryClasspathContainerSerializer {
     File stateFile = getContainerStateFile(javaProject, MASTER_LIBRARY_LIST_FILE_ID, false);
     if (stateFile == null) {
       logger.warning("No library-id state file found: " + stateFile);
-      return null;
+      return Collections.emptyList();
     }
     try (Reader reader = Files.newBufferedReader(stateFile.toPath(), StandardCharsets.UTF_8)) {
       JsonArray array = gson.fromJson(reader, JsonArray.class);
       if (array == null) {
-        return null;
+        return Collections.emptyList();
       }
       List<String> libraryIds = new ArrayList<>(array.size());
       for (JsonElement element : array) {
